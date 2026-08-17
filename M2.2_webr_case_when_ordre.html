@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>case_when() - l'ordre des conditions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'Consolas','Courier New',monospace;
+    --page-bg:#ffffff;--surface-1:#fafafa;--surface-2:#ffffff;
+    --border:#d9d9d9;--border-strong:#b8b8b8;--border-accent:#185FA5;
+    --text-primary:#1a1a1a;--text-secondary:#5f5e5a;--text-muted:#8a8f96;
+    --text-accent:#185FA5;--text-success:#1a7f5a;--text-danger:#b23b2e;
+    --bg-accent:#E6F1FB;--bg-accent-muted:#f0f6fc;--step-blue:#0C447C;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg:#1c1c1c;--surface-1:#262626;--surface-2:#1e1e1e;
+      --border:#3a3a3a;--border-strong:#555555;--border-accent:#85B7EB;
+      --text-primary:#e8e8e8;--text-secondary:#b4b2a9;--text-muted:#9aa0a6;
+      --text-accent:#85B7EB;--text-success:#97C459;--text-danger:#f09595;
+      --bg-accent:#16324a;--bg-accent-muted:#202b36;--step-blue:#85B7EB;
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font-sans);background:var(--page-bg);color:var(--text-primary);line-height:1.55;padding:16px;font-size:15px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  .objectif{border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;background:var(--surface-1);margin-bottom:14px;}
+  .objectif .goal{font-weight:600;}
+  .objectif ul{margin:8px 0 0;padding-left:20px;}
+  .objectif li{margin-bottom:3px;}
+  .step1{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-weight:600;color:var(--step-blue);}
+  .rowflex{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+  .pane{flex:1 1 340px;min-width:300px;border:0.5px solid var(--border);border-radius:2px;overflow:hidden;}
+  .pane.res{flex:1 1 260px;min-width:240px;}
+  .pane-head{padding:7px 10px;background:var(--surface-1);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary);}
+  .pane-head .mono{font-family:var(--font-mono);}
+  .tabs{display:flex;border-bottom:0.5px solid var(--border);}
+  .vtab{flex:1;border:none;background:transparent;padding:7px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  .vtab.on{background:var(--surface-2);color:var(--text-primary);}
+  .vtab:first-child{border-right:0.5px solid var(--border);}
+  pre#code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre;overflow-x:auto;background:var(--surface-2);}
+  .sect{padding:10px 12px;border-top:0.5px solid var(--border);}
+  .step{font-size:12.5px;font-weight:600;color:var(--step-blue);margin-bottom:8px;}
+  .predrow{display:flex;gap:6px;flex-wrap:wrap;}
+  .pred{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:5px 10px;font-size:12px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .pred.on{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);}
+  .prederr{font-size:12px;color:var(--text-danger);margin-top:7px;}
+  .btns{display:flex;align-items:center;gap:10px;}
+  .run{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:6px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:6px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:6px 10px;font-weight:500;color:var(--text-muted);font-size:11.5px;border-bottom:0.5px solid var(--border);}
+  td{padding:6px 10px;border-bottom:0.5px solid var(--border);}
+  td.mono{font-family:var(--font-mono);}
+  tr.focus{background:var(--bg-accent-muted);}
+  .feedback{font-size:12.5px;padding:9px 10px;border-top:0.5px solid var(--border);color:var(--text-secondary);min-height:18px;}
+  .compare{margin-top:12px;border:0.5px solid var(--border);border-radius:2px;padding:10px 12px;font-size:13px;color:var(--text-secondary);background:var(--surface-1);}
+  .compare .mono{font-family:var(--font-mono);}
+  .revealBtn{margin-top:12px;border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reveal{margin-top:10px;border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text-primary);background:var(--surface-1);}
+  .reveal .mono{font-family:var(--font-mono);}
+  @media (max-width:600px){.pane{flex:1 1 100%;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="objectif">
+    <span class="goal">Objectif : classer chaque patient en 3 catégories : obésité sévère si IMC ≥ 40, obésité si IMC ≥ 30, sinon poids normal.</span>
+    <ul>
+      <li>À droite, le tableau initial : 6 patients avec leur IMC, pas encore classés.</li>
+      <li>Deux versions du code diffèrent seulement par l'ordre des deux premières conditions.</li>
+      <li>Prédisez d'abord, puis exécutez : laquelle classe correctement les IMC ≥ 40 ?</li>
+    </ul>
+    <div class="step1">1. Cliquez sur « version 1 » et « version 2 » pour lire les deux ordres, et comparez-les.</div>
+  </div>
+
+  <div class="rowflex">
+    <div class="pane">
+      <div class="pane-head">script.R</div>
+      <div class="tabs">
+        <button class="vtab on" data-v="1">version 1</button>
+        <button class="vtab" data-v="2">version 2</button>
+      </div>
+      <pre id="code"></pre>
+
+      <div class="sect">
+        <div class="step">2. Votre prédiction : avec cet ordre, comment P003 (IMC 42) sera-t-il classé ?</div>
+        <div class="predrow pset" data-who="p3">
+          <button class="pred" data-p="poids normal">poids normal</button>
+          <button class="pred" data-p="obésité">obésité</button>
+          <button class="pred" data-p="obésité sévère">obésité sévère</button>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="step">3. Et P002 (IMC 32), comment sera-t-il classé avec ce même ordre ?</div>
+        <div class="predrow pset" data-who="p2">
+          <button class="pred" data-p="poids normal">poids normal</button>
+          <button class="pred" data-p="obésité">obésité</button>
+          <button class="pred" data-p="obésité sévère">obésité sévère</button>
+        </div>
+        <div class="prederr" id="predErr" hidden>Répondez aux deux prédictions avant d'exécuter.</div>
+      </div>
+
+      <div class="sect">
+        <div class="step">4. Cliquez sur « exécuter » : le code s'applique et vous verrez si vos prédictions étaient justes.</div>
+        <div class="btns">
+          <button class="run" id="run">▶ exécuter</button>
+          <button class="reset" id="reset">réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane res">
+      <div class="pane-head">résultat : <span class="mono">data</span> (version <span id="vlabel">1</span>)</div>
+      <table>
+        <thead><tr><th>patient</th><th>imc</th><th>situation_imc</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <div class="compare" id="compare">Comparaison : exécutez les deux versions pour voir lesquelles changent selon l'ordre.</div>
+
+  <button class="revealBtn" id="revealBtn">Voir l'explication</button>
+  <div class="reveal" id="reveal" hidden>
+    <span class="mono">case_when()</span> évalue les conditions de haut en bas et s'arrête à la première vraie.<br>
+    Quand <span class="mono">imc &gt;= 30</span> est écrit avant <span class="mono">imc &gt;= 40</span>, un IMC de 42 déclenche d'abord « obésité » et n'atteint jamais « obésité sévère ». P002 (IMC 32), lui, est classé « obésité » dans les deux cas : l'ordre ne le concerne pas.<br>
+    La règle : placer les conditions du plus spécifique au plus général.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var patients=[{id:'P001',imc:24.5},{id:'P002',imc:32.1},{id:'P003',imc:42.0},{id:'P004',imc:27.8},{id:'P005',imc:45.3},{id:'P006',imc:30.5}];
+  var focusIds=['P002','P003'];
+  var kw='color:var(--text-accent);', str='color:var(--text-success);';
+  function ln(n,html){return '<span style="color:var(--text-muted);display:inline-block;width:1.4em;">'+n+'</span>'+html;}
+  function codeFor(v){
+    var a,b;
+    if(v==1){a='imc &gt;= 30 ~ <span style="'+str+'">"obésité"</span>';b='imc &gt;= 40 ~ <span style="'+str+'">"obésité sévère"</span>';}
+    else{a='imc &gt;= 40 ~ <span style="'+str+'">"obésité sévère"</span>';b='imc &gt;= 30 ~ <span style="'+str+'">"obésité"</span>';}
+    return [ln(1,'data <span style="'+kw+'">&lt;-</span> data <span style="'+kw+'">%&gt;%</span>'),
+      ln(2,'  <span style="'+kw+'">mutate</span>(situation_imc = <span style="'+kw+'">case_when</span>('),
+      ln(3,'    '+a+','),ln(4,'    '+b+','),
+      ln(5,'    <span style="'+kw+'">TRUE</span> ~ <span style="'+str+'">"poids normal"</span>'),
+      ln(6,'  ))')].join('\n');
+  }
+  function classify(imc,v){ if(v==1){if(imc>=30)return'obésité';if(imc>=40)return'obésité sévère';return'poids normal';} if(imc>=40)return'obésité sévère';if(imc>=30)return'obésité';return'poids normal'; }
+  var cur=1, p3={}, p2={}, ran={};
+  var codeEl=document.getElementById('code'),tbody=document.getElementById('tbody'),vlabel=document.getElementById('vlabel');
+  var feedback=document.getElementById('feedback'),predErr=document.getElementById('predErr'),compare=document.getElementById('compare');
+  var tabs=document.querySelectorAll('.vtab');
+  function setTabs(){tabs.forEach(function(t){t.classList.toggle('on', t.dataset.v==cur);});}
+  function setPreds(){
+    document.querySelectorAll('.pset').forEach(function(set){
+      var who=set.dataset.who, val=(who==='p3'?p3[cur]:p2[cur]);
+      set.querySelectorAll('.pred').forEach(function(b){b.classList.toggle('on', val===b.dataset.p);});
+    });
+  }
+  function rowHTML(p,sit){var hv=focusIds.indexOf(p.id)>=0;return '<tr'+(hv?' class="focus"':'')+'><td class="mono">'+p.id+'</td><td class="mono">'+p.imc.toFixed(1)+'</td><td'+(sit==='-'?' style="color:var(--text-muted);"':'')+'>'+sit+'</td></tr>';}
+  function renderTable(){vlabel.textContent=cur;tbody.innerHTML=patients.map(function(p){return rowHTML(p, ran[cur]?classify(p.imc,cur):'-');}).join('');}
+  function fbLine(label,guess,actual){var ok=(guess===actual);return '<div style="margin-bottom:3px;">'+label+' : '+(ok?'<span style="color:var(--text-success);">juste</span>':'<span style="color:var(--text-danger);">à revoir</span>')+' (prédit « '+guess+' », code « '+actual+' »)</div>';}
+  function renderFeedback(){
+    if(!ran[cur]){feedback.innerHTML='';return;}
+    feedback.innerHTML=fbLine('P003 (42)',p3[cur],classify(42,cur))+fbLine('P002 (32)',p2[cur],classify(32,cur));
+  }
+  function renderCompare(){
+    if(!ran[1]&&!ran[2])return;
+    function c(imc,v){return ran[v]?('v'+v+' : '+classify(imc,v)):('v'+v+' : ?');}
+    var both=ran[1]&&ran[2];
+    compare.innerHTML='<div style="color:var(--text-primary);">P003 (IMC 42) &rarr; <span class="mono">'+c(42,1)+'</span> | <span class="mono">'+c(42,2)+'</span></div><div style="color:var(--text-primary);margin-top:3px;">P002 (IMC 32) &rarr; <span class="mono">'+c(32,1)+'</span> | <span class="mono">'+c(32,2)+'</span></div>'+(both?'<div style="margin-top:6px;">P003 change de classe selon l\'ordre, P002 non. Pourquoi cette différence ?</div>':'');
+  }
+  tabs.forEach(function(t){t.addEventListener('click',function(){cur=parseInt(t.dataset.v);setTabs();codeEl.innerHTML=codeFor(cur);setPreds();predErr.hidden=true;renderTable();renderFeedback();});});
+  document.querySelectorAll('.pset').forEach(function(set){var who=set.dataset.who;set.querySelectorAll('.pred').forEach(function(b){b.addEventListener('click',function(){if(who==='p3')p3[cur]=b.dataset.p;else p2[cur]=b.dataset.p;predErr.hidden=true;setPreds();});});});
+  document.getElementById('run').addEventListener('click',function(){if(!p3[cur]||!p2[cur]){predErr.hidden=false;return;}ran[cur]=true;renderTable();renderFeedback();renderCompare();});
+  document.getElementById('reset').addEventListener('click',function(){p3={};p2={};ran={};predErr.hidden=true;setPreds();renderTable();feedback.innerHTML='';compare.innerHTML='Comparaison : exécutez les deux versions pour voir lesquelles changent selon l\'ordre.';});
+  var rb=document.getElementById('reveal');document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
+  setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderTable();
+})();
+</script>
+</body>
+</html>
