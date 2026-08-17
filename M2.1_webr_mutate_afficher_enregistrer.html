@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mutate() - afficher ou enregistrer ?</title>
+<!--
+  ============================================================================
+  BLOC webR - Chapitre 1 (M2) : mutate() "afficher vs enregistrer"
+  Objectif 3 : distinguer une transformation qui s'affiche d'une
+  transformation qui s'enregistre dans la table.
+
+  DEPLOIEMENT
+  1. Deposez ce fichier .html dans votre depot GitHub -> GitHub Pages.
+  2. URL publique : .../webr_mutate_afficher_enregistrer.html
+  3. Rise, bloc "Multimedia > Embed" :
+     <iframe src="VOTRE-URL" width="100%" height="820" frameborder="0"></iframe>
+
+  DONNEES : jeu de demo (6 patients) defini dans R_SETUP (poids / taille en m).
+  Pour coller a consultations_med.csv : adaptez R_SETUP et PRESETS.
+  ============================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --muted:#6b7280;
+    --border:#d9d9d9;
+    --ok:#1a7f5a;
+    --no:#8a8f96;
+    --blue:#004C93;
+    --bg-soft:#fafafa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:var(--ink);background:#fff;line-height:1.55;padding:18px;font-size:15px;}
+  .wrap{max-width:840px;margin:0 auto;}
+  code.inl{font-family:'Consolas','Courier New',monospace;background:var(--bg-soft);
+    color:var(--blue);padding:1px 5px;border:1px solid var(--border);font-size:.88em;}
+
+  .head{padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+  .head h1{font-size:1.3rem;font-weight:700;letter-spacing:-.2px;}
+  .head p{font-size:.9rem;color:var(--muted);margin-top:4px;}
+
+  .consigne{border:1px solid var(--border);padding:12px 15px;font-size:.92rem;margin-bottom:18px;}
+
+  .presets{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+  .preset{flex:1 1 220px;text-align:left;cursor:pointer;background:#fff;
+    border:1px solid var(--border);padding:11px 13px;font-family:inherit;transition:.12s;}
+  .preset:hover{border-color:#8a8f96;}
+  .preset .n{display:inline-block;font-weight:700;font-size:.82rem;margin-bottom:4px;}
+  .preset .lbl{display:block;font-size:.83rem;color:var(--muted);margin-bottom:5px;}
+  .preset .cd{font-family:'Consolas','Courier New',monospace;font-size:.78rem;color:var(--blue);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .editor-label{font-size:.8rem;color:var(--muted);margin-bottom:5px;display:block;}
+  textarea#editor{width:100%;min-height:70px;resize:vertical;
+    font-family:'Consolas','Courier New',monospace;font-size:.9rem;
+    border:1px solid var(--border);padding:11px 13px;color:var(--ink);background:#fff;line-height:1.5;}
+  textarea#editor:focus{outline:none;border-color:var(--ink);}
+
+  .btn-row{display:flex;gap:10px;margin:10px 0 20px;flex-wrap:wrap;}
+  button.act{font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;border:none;padding:9px 20px;transition:.12s;}
+  .run{background:var(--ink);color:#fff;}
+  .run:hover{background:#333;}
+  .run:disabled{background:#bfc3c8;cursor:not-allowed;}
+  .reset{background:#fff;color:var(--muted);border:1px solid var(--border);}
+  .reset:hover{border-color:var(--ink);color:var(--ink);}
+
+  .panel-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  #console{background:var(--bg-soft);border:1px solid var(--border);padding:10px 14px;
+    font-family:'Consolas','Courier New',monospace;font-size:.85rem;
+    min-height:110px;max-height:260px;overflow:auto;color:var(--ink);margin-bottom:22px;}
+  #console .line{white-space:pre-wrap;word-break:break-word;padding:1px 0;}
+  #console .cmd{color:var(--blue);}
+  #console .out{color:var(--ink);}
+  #console .err{color:#b23b2e;}
+  #console .muted{color:var(--muted);font-style:italic;}
+
+  .states{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:16px;}
+  .state{border:1px solid var(--border);padding:13px 15px;}
+  .state h3{font-size:.95rem;margin-bottom:9px;font-weight:600;}
+  .state h3 code{font-family:'Consolas','Courier New',monospace;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px;min-height:26px;}
+  .chip{font-family:'Consolas','Courier New',monospace;font-size:.8rem;
+    background:#fff;color:#444;padding:3px 9px;border:1px solid var(--border);}
+  .chip-imc{color:var(--ok);font-weight:600;border-color:var(--ok);}
+  .verdict{font-size:.86rem;font-weight:600;}
+  .verdict.ok{color:var(--ok);}
+  .verdict.no{color:var(--no);}
+
+  .interp{border:1px solid var(--border);padding:12px 15px;font-size:.9rem;}
+  .interp b{color:var(--ink);}
+
+  .foot{font-size:.76rem;color:var(--muted);margin-top:20px;border-top:1px solid var(--border);padding-top:10px;}
+
+  #loader{position:fixed;inset:0;background:rgba(255,255,255,.97);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:50;}
+  .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--ink);border-radius:50%;
+    animation:sp 1s linear infinite;margin-bottom:14px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  #loaderMsg{font-size:.92rem;color:var(--ink);max-width:340px;}
+  #loaderSub{font-size:.78rem;color:var(--muted);margin-top:6px;}
+
+  @media (max-width:600px){.head h1{font-size:1.15rem;}.preset{flex:1 1 100%;}}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>mutate() : afficher ou enregistrer ?</h1>
+    <p>Une transformation s'affiche a l'ecran. Elle ne s'enregistre dans la table que si vous l'assignez avec <code class="inl">&lt;-</code>.</p>
+  </div>
+
+  <div class="consigne">
+    Executez les <strong>trois etats</strong> ci-dessous et observez le panneau
+    <strong>"Contenu de <code class="inl">data</code>"</strong> : la colonne
+    <code class="inl">imc</code> n'apparait dans la table que lorsqu'elle y a ete reellement enregistree.
+    Vous pouvez aussi modifier le code librement.
+  </div>
+
+  <div class="presets">
+    <button class="preset" data-preset="p1">
+      <span class="n">1. Sans assignation</span>
+      <span class="lbl">On affiche le resultat</span>
+      <span class="cd">mutate(data, imc = ...)</span>
+    </button>
+    <button class="preset" data-preset="p2">
+      <span class="n">2. Assignation dans data</span>
+      <span class="lbl">On ecrase la table</span>
+      <span class="cd">data &lt;- mutate(data, ...)</span>
+    </button>
+    <button class="preset" data-preset="p3">
+      <span class="n">3. Assignation dans data1</span>
+      <span class="lbl">On cree une nouvelle table</span>
+      <span class="cd">data1 &lt;- mutate(data, ...)</span>
+    </button>
+  </div>
+
+  <label class="editor-label" for="editor">Code R (modifiable) :</label>
+  <textarea id="editor" spellcheck="false"></textarea>
+  <div class="btn-row">
+    <button class="act run" id="runBtn" disabled>Executer</button>
+    <button class="act reset" id="resetBtn">Reinitialiser data</button>
+  </div>
+
+  <div class="panel-title">Console R</div>
+  <div id="console"></div>
+
+  <div class="states">
+    <div class="state">
+      <h3>Contenu de <code>data</code></h3>
+      <div class="chips" id="dataCols"></div>
+      <div class="verdict no" id="dataVerdict">-</div>
+    </div>
+    <div class="state" id="data1Panel" style="display:none;">
+      <h3>Contenu de <code>data1</code> <span style="font-weight:400;color:var(--muted);font-size:.82rem;">(table creee separement)</span></h3>
+      <div class="chips" id="data1Cols"></div>
+    </div>
+  </div>
+
+  <div class="interp" id="interp">Cliquez sur un etat pour commencer.</div>
+
+  <div class="foot">
+    R s'execute dans votre navigateur (webR), aucune installation.
+    Jeu de demonstration : 6 patients fictifs (colonnes <code class="inl">poids</code>, <code class="inl">taille</code> en metres).
+  </div>
+</div>
+
+<div id="loader">
+  <div class="spin"></div>
+  <div id="loaderMsg">Chargement de R...</div>
+  <div id="loaderSub">Le premier chargement peut prendre ~30 secondes.</div>
+</div>
+
+<script type="module">
+import { WebR, ChannelType } from 'https://webr.r-wasm.org/latest/webr.mjs';
+
+let webR = null, ready = false;
+
+const els = {
+  loader:      document.getElementById('loader'),
+  loaderMsg:   document.getElementById('loaderMsg'),
+  editor:      document.getElementById('editor'),
+  runBtn:      document.getElementById('runBtn'),
+  resetBtn:    document.getElementById('resetBtn'),
+  console:     document.getElementById('console'),
+  dataCols:    document.getElementById('dataCols'),
+  dataVerdict: document.getElementById('dataVerdict'),
+  data1Panel:  document.getElementById('data1Panel'),
+  data1Cols:   document.getElementById('data1Cols'),
+  interp:      document.getElementById('interp'),
+};
+
+const R_SETUP = `
+suppressMessages(library(dplyr))
+data <- data.frame(
+  patient_id = c("P001","P002","P003","P004","P005","P006"),
+  sexe       = c("F","H","H","F","H","F"),
+  poids      = c(68, 82, 91, 55, 74, 60),
+  taille     = c(1.65, 1.78, 1.80, 1.60, 1.72, 1.58),
+  sbp        = c(128, 145, 152, 118, 138, 122),
+  stringsAsFactors = FALSE
+)
+.data_orig <- data
+if (exists("data1")) rm(data1)
+`;
+
+const PRESETS = {
+  p1: "mutate(data, imc = poids / taille^2)",
+  p2: "data <- mutate(data, imc = poids / taille^2)",
+  p3: "data1 <- mutate(data, imc = poids / taille^2)",
+};
+
+function setLoader(m){ els.loaderMsg.textContent = m; }
+function hideLoader(){ els.loader.style.display = 'none'; }
+
+function printConsole(text, cls){
+  const div = document.createElement('div');
+  div.className = 'line ' + (cls || '');
+  div.textContent = text;
+  els.console.appendChild(div);
+  els.console.scrollTop = els.console.scrollHeight;
+}
+
+function renderChips(container, cols){
+  container.innerHTML = '';
+  cols.forEach(c => {
+    const span = document.createElement('span');
+    span.className = 'chip' + (c === 'imc' ? ' chip-imc' : '');
+    span.textContent = c;
+    container.appendChild(span);
+  });
+}
+
+async function getCols(name){
+  const obj = await webR.evalR(`if (exists("${name}")) names(${name}) else NA_character_`);
+  const js  = await obj.toJs();
+  webR.destroy(obj);
+  if(!js.values || (js.values.length === 1 && js.values[0] === null)) return null;
+  return js.values;
+}
+
+function updateInterp(hasImc, hasData1){
+  let html;
+  if(hasData1){
+    html = "<b>3. Nouvelle table.</b> <code class='inl'>data1</code> contient <code class='inl'>imc</code>, " +
+           "mais <code class='inl'>data</code> reste inchangee : l'assignation a cree une table a part, sans toucher l'originale.";
+  } else if(hasImc){
+    html = "<b>2. Enregistre.</b> Le resultat a ete reassigne a <code class='inl'>data</code> : " +
+           "la colonne <code class='inl'>imc</code> fait desormais partie de la table.";
+  } else {
+    html = "<b>1. Affiche seulement.</b> Le resultat s'est montre dans la console, " +
+           "mais <code class='inl'>data</code> n'a pas change, rien n'a ete enregistre. " +
+           "C'est toute la difference entre afficher et enregistrer.";
+  }
+  els.interp.innerHTML = html;
+}
+
+async function refreshState(){
+  const dcols  = await getCols('data');
+  renderChips(els.dataCols, dcols || []);
+  const hasImc = !!(dcols && dcols.includes('imc'));
+  els.dataVerdict.textContent = hasImc ? "imc est enregistree dans data." : "imc n'est pas dans data (rien enregistre).";
+  els.dataVerdict.className = 'verdict ' + (hasImc ? 'ok' : 'no');
+
+  const d1 = await getCols('data1');
+  if(d1){ els.data1Panel.style.display = ''; renderChips(els.data1Cols, d1); }
+  else  { els.data1Panel.style.display = 'none'; }
+  updateInterp(hasImc, !!d1);
+}
+
+async function run(code){
+  if(!ready) return;
+  els.runBtn.disabled = true;
+  printConsole('> ' + code.trim().replace(/\n/g, '\n> '), 'cmd');
+  const shelter = await new webR.Shelter();
+  try{
+    const res = await shelter.captureR(code, { withAutoprint:true, captureStreams:true, captureConditions:false });
+    const out = res.output.map(o => o.data).join('\n');
+    if(out.trim().length) printConsole(out, 'out');
+    else printConsole('(aucun affichage, le resultat a ete assigne)', 'muted');
+  }catch(e){
+    printConsole((e && e.message) ? e.message : String(e), 'err');
+  }finally{
+    shelter.purge(); els.runBtn.disabled = false;
+  }
+  await refreshState();
+}
+
+async function init(){
+  try{
+    setLoader('Chargement de R (WebAssembly)...');
+    webR = new WebR({ channelType: ChannelType.PostMessage });
+    await webR.init();
+    setLoader('Installation du package dplyr...');
+    await webR.installPackages(['dplyr']);
+    setLoader('Preparation des donnees...');
+    await webR.evalRVoid(R_SETUP);
+    ready = true;
+    els.editor.value = PRESETS.p1;
+    hideLoader();
+    await refreshState();
+  }catch(e){
+    setLoader('Erreur de chargement : ' + ((e && e.message) ? e.message : e) + ' - verifiez la connexion internet.');
+  }
+}
+
+document.querySelectorAll('[data-preset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const code = PRESETS[btn.dataset.preset];
+    els.editor.value = code;
+    run(code);
+  });
+});
+els.runBtn.addEventListener('click', () => run(els.editor.value));
+els.resetBtn.addEventListener('click', async () => {
+  if(!ready) return;
+  await webR.evalRVoid('data <- .data_orig; if (exists("data1")) rm(data1)');
+  els.console.innerHTML = '';
+  printConsole('data reinitialisee a son etat d\'origine.', 'muted');
+  els.editor.value = PRESETS.p1;
+  await refreshState();
+});
+
+init();
+</script>
+</body>
+</html>
