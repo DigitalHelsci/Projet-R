@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mutate() - afficher ou enregistrer ?</title>
+<!--
+  Exercice interactif - Chapitre 1 (M2) : mutate(), afficher vs enregistrer (Obj 3).
+  Maquette HTML/CSS/JS (ce n'est pas webR). L'apprenant predit puis verifie.
+  Deploiement : GitHub Pages. Rise > Embed :
+     <iframe src="VOTRE-URL" width="100%" height="720" frameborder="0"></iframe>
+  Mode sombre gere via prefers-color-scheme.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'Consolas','Courier New',monospace;
+    --page-bg:#ffffff;--surface-1:#fafafa;--surface-2:#ffffff;
+    --border:#d9d9d9;--border-strong:#b8b8b8;--border-accent:#185FA5;
+    --text-primary:#1a1a1a;--text-secondary:#5f5e5a;--text-muted:#8a8f96;
+    --text-accent:#185FA5;--text-success:#1a7f5a;--text-danger:#b23b2e;
+    --bg-accent:#E6F1FB;--step-blue:#0C447C;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg:#1c1c1c;--surface-1:#262626;--surface-2:#1e1e1e;
+      --border:#3a3a3a;--border-strong:#555555;--border-accent:#85B7EB;
+      --text-primary:#e8e8e8;--text-secondary:#b4b2a9;--text-muted:#9aa0a6;
+      --text-accent:#85B7EB;--text-success:#97C459;--text-danger:#f09595;
+      --bg-accent:#16324a;--step-blue:#85B7EB;
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font-sans);background:var(--page-bg);color:var(--text-primary);line-height:1.55;padding:16px;font-size:15px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  .mono{font-family:var(--font-mono);font-variant-ligatures:none;}
+  pre#code{font-variant-ligatures:none;}
+  .objectif{border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;background:var(--surface-1);margin-bottom:14px;}
+  .objectif .goal{font-weight:600;}
+  .objectif ul{margin:8px 0 0;padding-left:20px;}
+  .objectif li{margin-bottom:3px;}
+  .step1{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-weight:600;color:var(--step-blue);}
+  .rowflex{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+  .pane{flex:1 1 340px;min-width:300px;border:0.5px solid var(--border);border-radius:2px;overflow:hidden;}
+  .pane.res{flex:1 1 260px;min-width:240px;}
+  .pane-head{padding:7px 10px;background:var(--surface-1);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary);}
+  .tabs{display:flex;border-bottom:0.5px solid var(--border);}
+  .vtab{flex:1;border:none;background:transparent;padding:7px;font-size:12px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);font-variant-ligatures:none;}
+  .vtab .mono{font-family:var(--font-mono);font-variant-ligatures:none;}
+  .vtab.on{background:var(--surface-2);color:var(--text-primary);}
+  .vtab:not(:last-child){border-right:0.5px solid var(--border);}
+  pre#code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre-wrap;word-break:break-word;background:var(--surface-2);}
+  .sect{padding:10px 12px;border-top:0.5px solid var(--border);}
+  .step{font-size:12.5px;font-weight:600;color:var(--step-blue);margin-bottom:8px;}
+  .pred{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:5px 16px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .pred.on{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);}
+  .prederr{font-size:12px;color:var(--text-danger);margin-top:6px;}
+  .btns{display:flex;align-items:center;gap:10px;}
+  .run{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:6px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:6px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:3px 8px;border-radius:2px;margin:0 5px 5px 0;border:0.5px solid var(--border);color:var(--text-primary);background:var(--surface-2);}
+  .chip.imc{border-color:var(--border-accent);color:var(--text-accent);background:var(--bg-accent);}
+  .envlabel{font-size:11.5px;color:var(--text-secondary);margin:0 0 5px;}
+  .dtable{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono);}
+  .dtable th{text-align:left;padding:4px 7px;font-weight:500;color:var(--text-muted);font-size:11px;border-bottom:0.5px solid var(--border);}
+  .dtable td{padding:4px 7px;border-bottom:0.5px solid var(--border);color:var(--text-primary);}
+  .dtable .cimc{background:var(--bg-accent);color:var(--text-accent);}
+  .dtable th.cimc{color:var(--text-accent);}
+  .feedback{margin-top:12px;border:0.5px solid var(--border);border-radius:2px;padding:10px 12px;font-size:13px;color:var(--text-secondary);background:var(--surface-1);min-height:20px;}
+  .revealBtn{margin-top:12px;border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reveal{margin-top:10px;border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text-primary);background:var(--surface-1);}
+  .reveal .mono{font-family:var(--font-mono);}
+  @media (max-width:600px){.pane{flex:1 1 100%;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="objectif">
+    <span class="goal">Objectif : créer une colonne imc à partir de poids et taille, et distinguer ce qui s'affiche de ce qui s'enregistre dans data.</span>
+    <ul>
+      <li>À droite, l'environnement : le contenu réel de data (ses colonnes).</li>
+      <li>Trois versions du même calcul : seule l'assignation change.</li>
+      <li>Prédisez d'abord, puis exécutez.</li>
+    </ul>
+    <div class="step1">1. Cliquez sur les trois versions pour lire le code, et repérez la différence.</div>
+  </div>
+
+  <div class="rowflex">
+    <div class="pane">
+      <div class="pane-head">script.R</div>
+      <div class="tabs">
+        <button class="vtab on" data-v="1">sans assignation</button>
+        <button class="vtab" data-v="2">data <span class="mono">&lt;-</span></button>
+        <button class="vtab" data-v="3">data1 <span class="mono">&lt;-</span></button>
+      </div>
+      <pre id="code"></pre>
+
+      <div class="sect">
+        <div class="step">2. Votre prédiction : pour la version « <span id="qver">sans assignation</span> », la colonne imc sera-t-elle enregistrée dans data ?</div>
+        <div style="display:flex;gap:6px;">
+          <button class="pred" data-p="oui">oui</button>
+          <button class="pred" data-p="non">non</button>
+        </div>
+        <div class="prederr" id="predErr" hidden>Choisissez d'abord une prédiction.</div>
+      </div>
+
+      <div class="sect">
+        <div class="step">3. Cliquez sur « exécuter » : observez le contenu de data à droite.</div>
+        <div class="btns">
+          <button class="run" id="run">▶ exécuter</button>
+          <button class="reset" id="reset">réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane res">
+      <div class="pane-head">environnement</div>
+      <div id="env" style="padding:10px 12px;"></div>
+    </div>
+  </div>
+
+  <div class="feedback" id="feedback">Faites une prédiction, puis exécutez.</div>
+
+  <button class="revealBtn" id="revealBtn">Voir l'explication</button>
+  <div class="reveal" id="reveal" hidden>
+    Les fonctions de dplyr ne modifient jamais l'objet d'entrée.<br>
+    Une transformation s'affiche à l'écran, mais ne s'enregistre que si on la réassigne avec <span class="mono">&lt;-</span>.<br>
+    <span class="mono">data &lt;- mutate(...)</span> met à jour data ; <span class="mono">data1 &lt;- mutate(...)</span> crée une nouvelle table sans toucher data.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var rows=[
+    {id:'P001',poids:68,taille:1.65},
+    {id:'P002',poids:82,taille:1.78},
+    {id:'P003',poids:91,taille:1.80},
+    {id:'P004',poids:55,taille:1.60}
+  ];
+  var labels={1:'sans assignation',2:'data <span class="mono">&lt;-</span>',3:'data1 <span class="mono">&lt;-</span>'};
+  var kw='color:var(--text-accent);';
+  function codeFor(v){
+    var calc='<span style="'+kw+'">mutate</span>(data, imc = poids / taille^2)';
+    if(v==1) return calc;
+    if(v==2) return 'data <span style="'+kw+'">&lt;-</span> '+calc;
+    return 'data1 <span style="'+kw+'">&lt;-</span> '+calc;
+  }
+  function imc(r){return (r.poids/(r.taille*r.taille)).toFixed(1);}
+  function tableHTML(showImc){
+    var h='<table class="dtable"><thead><tr><th>patient_id</th><th>poids</th><th>taille</th>'+(showImc?'<th class="cimc">imc</th>':'')+'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      h+='<tr><td>'+r.id+'</td><td>'+r.poids+'</td><td>'+r.taille.toFixed(2)+'</td>'+(showImc?'<td class="cimc">'+imc(r)+'</td>':'')+'</tr>';
+    });
+    return h+'</tbody></table>';
+  }
+  var cur=1, pred={}, ran={};
+  var codeEl=document.getElementById('code'),env=document.getElementById('env'),qver=document.getElementById('qver');
+  var feedback=document.getElementById('feedback'),predErr=document.getElementById('predErr');
+  var tabs=document.querySelectorAll('.vtab'),preds=document.querySelectorAll('.pred');
+  function imcInData(v){return v==2;}
+  function setTabs(){tabs.forEach(function(t){t.classList.toggle('on', t.dataset.v==cur);});qver.innerHTML=labels[cur];}
+  function setPreds(){preds.forEach(function(b){b.classList.toggle('on', pred[cur]===b.dataset.p);});}
+  function renderEnv(){
+    var showImc=(ran[cur]&&imcInData(cur));
+    var html='<div class="envlabel">data</div>'+tableHTML(showImc);
+    if(ran[cur]&&cur==3){html+='<div class="envlabel" style="margin-top:12px;">data1 (nouvelle table)</div>'+tableHTML(true);}
+    env.innerHTML=html;
+  }
+  function renderFeedback(){
+    if(!ran[cur])return;
+    var actual=imcInData(cur)?'oui':'non', guess=pred[cur];
+    var lead=(guess===actual)?'<span style="color:var(--text-success);">Anticipation juste.</span> ':'<span style="color:var(--text-danger);">Pas tout à fait.</span> ';
+    var msg;
+    if(cur==1) msg='La commande a bien affiché imc à l\'écran, mais data n\'a pas changé : sans assignation, rien n\'est enregistré.';
+    else if(cur==2) msg='data a été réassignée : imc fait maintenant partie de data.';
+    else msg='data est inchangée ; imc a été enregistrée dans une nouvelle table, data1.';
+    feedback.innerHTML=lead+msg;feedback.style.color='var(--text-primary)';
+  }
+  tabs.forEach(function(t){t.addEventListener('click',function(){cur=parseInt(t.dataset.v);setTabs();codeEl.innerHTML=codeFor(cur);setPreds();predErr.hidden=true;renderEnv();if(ran[cur])renderFeedback();else{feedback.style.color='var(--text-secondary)';feedback.textContent='Faites une prédiction, puis exécutez.';}});});
+  preds.forEach(function(b){b.addEventListener('click',function(){pred[cur]=b.dataset.p;predErr.hidden=true;setPreds();});});
+  document.getElementById('run').addEventListener('click',function(){if(!pred[cur]){predErr.hidden=false;return;}ran[cur]=true;renderEnv();renderFeedback();});
+  document.getElementById('reset').addEventListener('click',function(){pred={};ran={};predErr.hidden=true;setPreds();renderEnv();feedback.style.color='var(--text-secondary)';feedback.textContent='Faites une prédiction, puis exécutez.';});
+  var rb=document.getElementById('reveal');document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
+  setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderEnv();
+})();
+</script>
+</body>
+</html>
