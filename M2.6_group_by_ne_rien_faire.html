@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>group_by() - seul, ca ne fait rien ?</title>
+<!--
+  Exercice interactif - Chapitre 6 (M2) : group_by(), pas de resultat visible seul (Obj 3).
+  Maquette HTML/CSS/JS (ce n'est pas webR).
+  Temps 1 : l'apprenant execute group_by(sexe) seul, predit, decouvre que rien
+  ne change visiblement dans le tableau (juste un marqueur de groupement).
+  Temps 2 : un bouton (curiosite) revele ce qui se passe si on ajoute summarise().
+  Deploiement : GitHub Pages. Rise > Embed :
+     <iframe src="VOTRE-URL" width="100%" height="760" frameborder="0"></iframe>
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'Consolas','Courier New',monospace;
+    --page-bg:#ffffff;--surface-1:#fafafa;--surface-2:#ffffff;
+    --border:#d9d9d9;--border-strong:#b8b8b8;--border-accent:#185FA5;
+    --text-primary:#1a1a1a;--text-secondary:#5f5e5a;--text-muted:#8a8f96;
+    --text-accent:#185FA5;--text-success:#1a7f5a;--text-danger:#b23b2e;
+    --bg-accent:#E6F1FB;--step-blue:#0C447C;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg:#1c1c1c;--surface-1:#262626;--surface-2:#1e1e1e;
+      --border:#3a3a3a;--border-strong:#555555;--border-accent:#85B7EB;
+      --text-primary:#e8e8e8;--text-secondary:#b4b2a9;--text-muted:#9aa0a6;
+      --text-accent:#85B7EB;--text-success:#97C459;--text-danger:#f09595;
+      --bg-accent:#16324a;--step-blue:#85B7EB;
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font-sans);background:var(--page-bg);color:var(--text-primary);line-height:1.55;padding:16px;font-size:15px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  .mono{font-family:var(--font-mono);font-variant-ligatures:none;}
+  .objectif{border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;background:var(--surface-1);margin-bottom:14px;}
+  .objectif .goal{font-weight:600;}
+  .objectif ul{margin:8px 0 0;padding-left:20px;}
+  .objectif li{margin-bottom:3px;}
+  .step1{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-weight:600;color:var(--step-blue);}
+  .rowflex{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+  .pane{flex:1 1 340px;min-width:300px;border:0.5px solid var(--border);border-radius:2px;overflow:hidden;}
+  .pane.res{flex:1 1 260px;min-width:240px;}
+  .pane-head{padding:7px 10px;background:var(--surface-1);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary);}
+  pre#code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre-wrap;word-break:break-word;background:var(--surface-2);font-variant-ligatures:none;}
+  .sect{padding:10px 12px;border-top:0.5px solid var(--border);}
+  .step{font-size:12.5px;font-weight:600;color:var(--step-blue);margin-bottom:8px;}
+  .predrow{display:flex;gap:6px;flex-wrap:wrap;}
+  .pred{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:5px 10px;font-size:12px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .pred.on{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);}
+  .prederr{font-size:12px;color:var(--text-danger);margin-top:7px;}
+  .btns{display:flex;align-items:center;gap:10px;}
+  .run{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:6px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:6px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  table.dtable{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono);}
+  .dtable th{text-align:left;padding:4px 7px;font-weight:500;color:var(--text-muted);font-size:11px;border-bottom:0.5px solid var(--border);}
+  .dtable td{padding:4px 7px;border-bottom:0.5px solid var(--border);color:var(--text-primary);}
+  .dtable .cnew{background:var(--bg-accent);color:var(--text-accent);}
+  .dtable th.cnew{color:var(--text-accent);}
+  .envlabel{font-size:11.5px;color:var(--text-secondary);margin:0 0 5px;}
+  .groupmark{font-size:11.5px;color:var(--text-accent);margin-top:6px;font-family:var(--font-mono);}
+  .feedback{margin-top:12px;border:0.5px solid var(--border);border-radius:2px;padding:10px 12px;font-size:13px;color:var(--text-secondary);background:var(--surface-1);min-height:20px;}
+  .curiosity{margin-top:10px;padding:10px 12px;border:0.5px solid var(--border);border-radius:2px;background:var(--surface-1);font-size:13px;color:var(--text-primary);}
+  .curiosity button{margin-top:8px;border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:6px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .revealBtn{margin-top:12px;border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reveal{margin-top:10px;border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text-primary);background:var(--surface-1);}
+  @media (max-width:600px){.pane{flex:1 1 100%;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="objectif">
+    <span class="goal">Objectif : comprendre ce que fait réellement group_by() sur un jeu de données.</span>
+    <ul>
+      <li>À droite, le tableau initial : 6 patients, non groupés.</li>
+      <li>Une seule commande à exécuter : group_by(sexe).</li>
+      <li>Prédisez d'abord ce qu'elle va afficher, puis exécutez.</li>
+    </ul>
+    <div class="step1">1. Lisez le code ci-dessous.</div>
+  </div>
+
+  <div class="rowflex">
+    <div class="pane">
+      <div class="pane-head">script.R</div>
+      <pre id="code">data <span style="color:var(--text-accent);">%&gt;%</span>
+  <span style="color:var(--text-accent);">group_by</span>(sexe)</pre>
+
+      <div class="sect">
+        <div class="step">2. Votre prédiction : que va afficher cette commande ?</div>
+        <div class="predrow">
+          <button class="pred" data-p="identique">les mêmes lignes, inchangées</button>
+          <button class="pred" data-p="resume">un résumé, 1 ligne par sexe</button>
+          <button class="pred" data-p="erreur">une erreur</button>
+        </div>
+        <div class="prederr" id="predErr" hidden>Choisissez d'abord une prédiction.</div>
+      </div>
+
+      <div class="sect">
+        <div class="step">3. Cliquez sur « exécuter » : observez le tableau à droite.</div>
+        <div class="btns">
+          <button class="run" id="run">▶ exécuter</button>
+          <button class="reset" id="reset">réinitialiser</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane res">
+      <div class="pane-head">environnement</div>
+      <div id="env" style="padding:10px 12px;"></div>
+    </div>
+  </div>
+
+  <div class="feedback" id="feedback">Faites une prédiction, puis exécutez.</div>
+
+  <div class="curiosity" id="curiosity" hidden>
+    Puisque rien ne s'affiche, à quoi sert group_by() ? Cliquez pour voir ce qui se passe si on ajoute summarise() derrière.
+    <div><button id="curBtn">Voir avec summarise()</button></div>
+  </div>
+
+  <div class="pane" id="summPane" style="margin-top:12px;display:none;">
+    <div class="pane-head">script.R (avec summarise)</div>
+    <pre style="margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);background:var(--surface-2);font-variant-ligatures:none;">data <span style="color:var(--text-accent);">%&gt;%</span>
+  <span style="color:var(--text-accent);">group_by</span>(sexe) <span style="color:var(--text-accent);">%&gt;%</span>
+  <span style="color:var(--text-accent);">summarise</span>(sbp_moyen = mean(sbp))</pre>
+    <div class="sect">
+      <div id="summEnv"></div>
+    </div>
+  </div>
+
+  <button class="revealBtn" id="revealBtn">Voir l'explication</button>
+  <div class="reveal" id="reveal" hidden>
+    group_by() ne modifie aucune valeur et ne réduit aucune ligne : il pose seulement un marqueur de groupement sur data, invisible dans le tableau.<br>
+    Ce marqueur change le comportement des fonctions qui suivent dans le pipe : appliqué après group_by(), summarise() calcule un résultat par groupe plutôt que sur l'ensemble des données.<br>
+    Utilisé seul, group_by() n'a donc aucun effet visible : c'est en le combinant à une autre fonction qu'il prend son sens.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var rows=[
+    {id:'P001',sexe:'F',sbp:128},
+    {id:'P002',sexe:'H',sbp:145},
+    {id:'P003',sexe:'H',sbp:152},
+    {id:'P004',sexe:'F',sbp:118},
+    {id:'P005',sexe:'H',sbp:138},
+    {id:'P006',sexe:'F',sbp:122}
+  ];
+  var env=document.getElementById('env'),feedback=document.getElementById('feedback'),predErr=document.getElementById('predErr');
+  var curiosity=document.getElementById('curiosity'),summPane=document.getElementById('summPane'),summEnv=document.getElementById('summEnv');
+  var preds=document.querySelectorAll('.pred');
+  var pred=null, ran=false;
+
+  function baseTable(showGroupMark){
+    var h='<div class="envlabel">data</div><table class="dtable"><thead><tr><th>patient_id</th><th>sexe</th><th>sbp</th></tr></thead><tbody>';
+    rows.forEach(function(r){h+='<tr><td>'+r.id+'</td><td>'+r.sexe+'</td><td>'+r.sbp+'</td></tr>';});
+    h+='</tbody></table>';
+    if(showGroupMark) h+='<div class="groupmark"># Groups: sexe [2]</div>';
+    return h;
+  }
+  function renderEnvInitial(){ env.innerHTML=baseTable(false); }
+  function renderEnvAfter(){ env.innerHTML=baseTable(true); }
+
+  function setPreds(){preds.forEach(function(b){b.classList.toggle('on', pred===b.dataset.p);});}
+  preds.forEach(function(b){b.addEventListener('click',function(){pred=b.dataset.p;predErr.hidden=true;setPreds();});});
+
+  document.getElementById('run').addEventListener('click',function(){
+    if(!pred){predErr.hidden=false;return;}
+    ran=true;
+    renderEnvAfter();
+    var lead=(pred==='identique')?'<span style="color:var(--text-success);">Anticipation juste.</span> ':'<span style="color:var(--text-danger);">Pas tout à fait.</span> ';
+    feedback.innerHTML=lead+'Le tableau est resté identique : mêmes lignes, mêmes valeurs. Le seul changement, invisible dans les données, est le marqueur "# Groups: sexe [2]" indiqué sous le tableau : data sait désormais qu\'elle est groupée par sexe, sans que rien d\'autre n\'ait bougé.';
+    feedback.style.color='var(--text-primary)';
+    curiosity.hidden=false;
+  });
+
+  document.getElementById('reset').addEventListener('click',function(){
+    pred=null; ran=false; predErr.hidden=true; setPreds();
+    renderEnvInitial();
+    feedback.style.color='var(--text-secondary)';
+    feedback.textContent='Faites une prédiction, puis exécutez.';
+    curiosity.hidden=true;
+    summPane.style.display='none';
+  });
+
+  document.getElementById('curBtn').addEventListener('click',function(){
+    var groups={};
+    rows.forEach(function(r){ (groups[r.sexe]=groups[r.sexe]||[]).push(r.sbp); });
+    var h='<div class="envlabel">résultat</div><table class="dtable"><thead><tr><th>sexe</th><th class="cnew">sbp_moyen</th></tr></thead><tbody>';
+    Object.keys(groups).sort().forEach(function(s){
+      var vals=groups[s], avg=(vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1);
+      h+='<tr><td>'+s+'</td><td class="cnew">'+avg+'</td></tr>';
+    });
+    h+='</tbody></table>';
+    summEnv.innerHTML=h;
+    summPane.style.display='block';
+  });
+
+  var rb=document.getElementById('reveal');
+  document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
+
+  renderEnvInitial();
+})();
+</script>
+</body>
+</html>
