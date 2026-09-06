@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>case_when() - l'ordre des conditions</title>
+<!--
+  Exercice interactif : case_when(), l'ordre des conditions.
+  Meme gabarit que M2.1_mutate_afficher_enregistrer.html (popup pedagogique + mockup RStudio).
+  La consigne (objectif/contexte) va en texte Rise, pas ici : ce popup ne contient que les etapes d'action.
+  Deploiement : GitHub Pages. Rise > Embed :
+     <iframe src="VOTRE-URL" width="100%" height="900" frameborder="0"></iframe>
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,6 +23,14 @@
     --text-primary:#1a1a1a;--text-secondary:#5f5e5a;--text-muted:#8a8f96;
     --text-accent:#185FA5;--text-success:#1a7f5a;--text-danger:#b23b2e;
     --bg-accent:#E6F1FB;--bg-accent-muted:#f0f6fc;--step-blue:#0C447C;
+    --ide-chrome-bg:#ECECEC;--ide-header-bg:#F3F3F3;--ide-tab-inactive:#E4E4E4;--ide-tab-active:#FFFFFF;
+    --ide-border:#C9C9C9;--ide-console-bg:#FFFFFF;--ide-console-text:#1a1a1a;--ide-logo-bg:#2A5DB0;
+    --ide-gutter-bg:#F5F5F5;--ide-gutter-text:#9AA0A6;
+    --btn-bg:#185FA5;--btn-text:#ffffff;
+    --popup-shadow:0 14px 30px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.10);
+    --file-ico:#7C93B3;--badge-bg:#DCE6F5;--badge-text:#2A4A73;
+    --click-tint:rgba(244,151,80,.16);--click-tint-hover:rgba(244,151,80,.28);
+    --accent-orange:#F49750;
   }
   @media (prefers-color-scheme: dark){
     :root{
@@ -24,151 +39,295 @@
       --text-primary:#e8e8e8;--text-secondary:#b4b2a9;--text-muted:#9aa0a6;
       --text-accent:#85B7EB;--text-success:#97C459;--text-danger:#f09595;
       --bg-accent:#16324a;--bg-accent-muted:#202b36;--step-blue:#85B7EB;
+      --ide-chrome-bg:#2b2b2b;--ide-header-bg:#333333;--ide-tab-inactive:#3a3a3a;--ide-tab-active:#1e1e1e;
+      --ide-border:#484848;--ide-console-bg:#1e1e1e;--ide-console-text:#d4d4d4;--ide-logo-bg:#5b9bd5;
+      --ide-gutter-bg:#262626;--ide-gutter-text:#7a7f85;
+      --popup-shadow:0 14px 34px rgba(0,0,0,.6),0 2px 10px rgba(0,0,0,.35);
+      --file-ico:#9db3d1;--badge-bg:#33455c;--badge-text:#BFD3EE;
+      --click-tint:rgba(244,151,80,.20);--click-tint-hover:rgba(244,151,80,.32);
+      --accent-orange:#F49750;
     }
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:var(--font-sans);background:var(--page-bg);color:var(--text-primary);line-height:1.55;padding:16px;font-size:15px;}
-  .wrap{max-width:860px;margin:0 auto;}
-  .objectif{border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;background:var(--surface-1);margin-bottom:14px;}
-  .objectif .goal{font-weight:600;}
-  .objectif ul{margin:8px 0 0;padding-left:20px;}
-  .objectif li{margin-bottom:3px;}
-  .step1{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-weight:600;color:var(--step-blue);}
-  .rowflex{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
-  .pane{flex:1 1 340px;min-width:300px;border:0.5px solid var(--border);border-radius:2px;overflow:hidden;}
-  .pane.res{flex:1 1 260px;min-width:240px;}
-  .pane-head{padding:7px 10px;background:var(--surface-1);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary);}
-  .pane-head .mono{font-family:var(--font-mono);}
-  .tabs{display:flex;border-bottom:0.5px solid var(--border);}
-  .vtab{flex:1;border:none;background:transparent;padding:7px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
-  .vtab.on{background:var(--surface-2);color:var(--text-primary);}
-  .vtab:first-child{border-right:0.5px solid var(--border);}
-  pre#code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre;overflow-x:auto;background:var(--surface-2);}
-  .sect{padding:10px 12px;border-top:0.5px solid var(--border);}
-  .step{font-size:12.5px;font-weight:600;color:var(--step-blue);margin-bottom:8px;}
-  .predrow{display:flex;gap:6px;flex-wrap:wrap;}
-  .pred{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:5px 10px;font-size:12px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .pred.on{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);}
-  .prederr{font-size:12px;color:var(--text-danger);margin-top:7px;}
-  .btns{display:flex;align-items:center;gap:10px;}
-  .run{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:6px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:6px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{text-align:left;padding:6px 10px;font-weight:500;color:var(--text-muted);font-size:11.5px;border-bottom:0.5px solid var(--border);}
-  td{padding:6px 10px;border-bottom:0.5px solid var(--border);}
-  td.mono{font-family:var(--font-mono);}
-  tr.focus{background:var(--bg-accent-muted);}
-  .feedback{font-size:12.5px;padding:9px 10px;border-top:0.5px solid var(--border);color:var(--text-secondary);min-height:18px;}
-  .compare{margin-top:12px;border:0.5px solid var(--border);border-radius:2px;padding:10px 12px;font-size:13px;color:var(--text-secondary);background:var(--surface-1);}
-  .compare .mono{font-family:var(--font-mono);}
-  .revealBtn{margin-top:12px;border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .reveal{margin-top:10px;border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text-primary);background:var(--surface-1);}
-  .reveal .mono{font-family:var(--font-mono);}
-  @media (max-width:600px){.pane{flex:1 1 100%;}}
+  body{font-family:var(--font-sans);background:var(--page-bg);color:var(--text-primary);line-height:1.55;padding:8px;font-size:15px;}
+  .wrap{max-width:100%;margin:0;}
+  .mono{font-family:var(--font-mono);font-variant-ligatures:none;}
+
+  /* popup consignes (etapes d'action uniquement), flotte au dessus de l'IDE */
+  .exercise-popup{position:relative;z-index:2;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;box-shadow:var(--popup-shadow);padding:16px 18px;margin:0 0 -22px 0;font-size:14px;line-height:1.7;}
+  .step1{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-weight:600;color:var(--step-blue);}
+  .step1.first{margin-top:0;padding-top:0;border-top:none;}
+  .predlabel{margin-top:8px;font-size:13px;font-weight:600;}
+  .predrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .pred{border:none;background:var(--btn-bg);color:var(--btn-text);border-radius:5px;padding:6px 14px;font-size:12.5px;font-weight:600;font-family:var(--font-sans);cursor:pointer;opacity:.55;}
+  .pred.on{opacity:1;box-shadow:0 0 0 2px var(--surface-2),0 0 0 4px var(--btn-bg);}
+  .prederr{font-size:12px;color:var(--text-danger);margin-top:8px;}
+  .ver-value{color:var(--accent-orange);font-weight:700;}
+
+  .run{flex:none;border:none;background:var(--btn-bg);color:var(--btn-text);border-radius:4px;padding:5px 16px;font-size:12.5px;font-weight:600;font-family:var(--font-sans);cursor:pointer;}
+  .run:hover{filter:brightness(1.1);}
+
+  .feedback{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);min-height:18px;}
+  .compare{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);}
+  .footer-row{display:flex;align-items:center;gap:14px;margin-top:10px;}
+  .revealBtn{border:1px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reset{border:1px solid var(--border);background:transparent;border-radius:2px;padding:7px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  .reveal{margin-top:10px;font-size:14px;line-height:1.7;color:var(--text-primary);}
+
+  /* fenetre RStudio : uniquement ce qui se passe reellement dans R */
+  .ide{position:relative;z-index:1;border:1px solid var(--ide-border);border-radius:4px;overflow:hidden;margin:14px 0;box-shadow:none;}
+  .ide-titlebar{display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--ide-chrome-bg);border-bottom:1px solid var(--ide-border);}
+  .r-logo{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ide-logo-bg);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .ide-menu{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ide-grid{display:grid;grid-template-columns:1fr 2px 1fr;grid-template-rows:auto 2px auto;background:var(--surface-2);}
+  .pane{background:var(--surface-2);display:flex;flex-direction:column;min-height:260px;min-width:0;}
+  .pane.bottom{min-height:220px;}
+  .pane.tl{grid-column:1;grid-row:1;}
+  .pane.tr{grid-column:3;grid-row:1;}
+  .pane.bl{grid-column:1;grid-row:3;}
+  .pane.br{grid-column:3;grid-row:3;}
+  .ide-div-v{grid-column:2;grid-row:1 / span 3;background:var(--ide-border);}
+  .ide-div-h{grid-column:1 / span 3;grid-row:2;background:var(--ide-border);}
+  @media (max-width:640px){
+    .ide-grid{grid-template-columns:1fr;}
+    .pane.tl,.pane.tr,.pane.bl,.pane.br{grid-column:1;border-bottom:2px solid var(--ide-border);}
+    .pane.tl{grid-row:1;}
+    .pane.tr{grid-row:2;}
+    .pane.bl{grid-row:3;}
+    .pane.br{grid-row:4;border-bottom:none;}
+    .ide-div-v,.ide-div-h{display:none;}
+  }
+
+  .tool-tabs{display:flex;background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);overflow-x:auto;}
+  .doc-tabs{display:flex;align-items:center;justify-content:space-between;background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);padding-right:8px;}
+  .doc-tabs .stabs{display:flex;overflow-x:auto;}
+  .ttab{padding:6px 12px;font-size:12px;color:var(--text-muted);white-space:nowrap;}
+  .ttab.on{background:var(--ide-tab-active);color:var(--text-primary);font-weight:500;}
+  .stab{flex:none;display:flex;align-items:center;border:none;border-right:1px solid var(--ide-border);border-top:2px solid transparent;background:var(--click-tint);padding:6px 12px;font-size:12px;font-family:var(--font-mono);cursor:pointer;color:var(--text-secondary);}
+  .stab:hover{background:var(--click-tint-hover);}
+  .stab.on{background:var(--ide-tab-active);color:var(--text-primary);font-weight:600;border-top:2px solid var(--file-ico);}
+  .file-ico{display:inline-block;width:9px;height:11px;background:var(--file-ico);border-radius:1px;margin-right:6px;}
+
+  .r-badge{display:inline-block;background:var(--badge-bg);color:var(--badge-text);border-radius:10px;padding:1px 8px;font-size:10.5px;font-weight:600;margin-right:6px;}
+
+  .code-area{display:flex;flex:1;overflow:auto;background:var(--surface-2);}
+  .gutter{background:var(--ide-gutter-bg);color:var(--ide-gutter-text);font-family:var(--font-mono);font-size:12.5px;line-height:1.65;padding:10px 8px;text-align:right;border-right:1px solid var(--ide-border);user-select:none;white-space:pre;margin:0;}
+  #code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre;flex:1;}
+
+  .console-meta{padding:4px 12px;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--ide-border);background:var(--ide-header-bg);}
+  .console-body{flex:1;background:var(--ide-console-bg);color:var(--ide-console-text);font-family:var(--font-mono);font-size:12.5px;padding:8px 12px;overflow:auto;}
+  .cline{white-space:pre-wrap;word-break:break-word;margin-bottom:2px;}
+
+  .env-toolbar,.files-toolbar{padding:5px 12px;font-size:11.5px;color:var(--text-secondary);background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);}
+  .env-body{flex:1;padding:8px 12px;overflow:auto;}
+  .env-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted);margin-bottom:4px;}
+  .env-row{margin-bottom:10px;}
+  .env-row-head{display:flex;align-items:center;gap:6px;font-size:12.5px;margin-bottom:4px;}
+  .disclosure{font-size:10px;color:var(--text-muted);}
+  .obj-name{color:var(--text-accent);font-weight:600;}
+  .obj-type{color:var(--text-muted);font-size:11.5px;}
+  .env-preview{padding-left:16px;}
+
+  .dtable{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono);}
+  .dtable th{text-align:left;padding:4px 7px;font-weight:500;color:var(--text-muted);font-size:11px;border-bottom:1px solid var(--border);}
+  .dtable td{padding:4px 7px;border-bottom:1px solid var(--border);color:var(--text-primary);}
+  .dtable tr.focus{background:var(--bg-accent-muted);}
+
+  .files-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .files-table th{text-align:left;padding:4px 12px;color:var(--text-muted);font-weight:500;font-size:11px;border-bottom:1px solid var(--ide-border);}
+  .files-table td{padding:4px 12px;color:var(--text-primary);}
+  .folder-ico{display:inline-block;width:11px;height:9px;background:#e8b339;border-radius:1px;margin-right:6px;vertical-align:middle;}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="objectif">
-    <span class="goal">Objectif : classer chaque patient en 3 catégories : obésité sévère si IMC ≥ 40, obésité si IMC ≥ 30, sinon poids normal.</span>
-    <ul>
-      <li>À droite, le tableau initial : 6 patients avec leur IMC, pas encore classés.</li>
-      <li>Deux versions du code diffèrent seulement par l'ordre des deux premières conditions.</li>
-      <li>Prédisez d'abord, puis exécutez : laquelle classe correctement les IMC ≥ 40 ?</li>
-    </ul>
-    <div class="step1">1. Cliquez sur « version 1 » et « version 2 » pour lire les deux ordres, et comparez-les.</div>
-  </div>
-
-  <div class="rowflex">
-    <div class="pane">
-      <div class="pane-head">script.R</div>
-      <div class="tabs">
-        <button class="vtab on" data-v="1">version 1</button>
-        <button class="vtab" data-v="2">version 2</button>
-      </div>
-      <pre id="code"></pre>
-
-      <div class="sect">
-        <div class="step">2. Votre prédiction : avec cet ordre, comment P003 (IMC 42) sera-t-il classé ?</div>
-        <div class="predrow pset" data-who="p3">
-          <button class="pred" data-p="poids normal">poids normal</button>
-          <button class="pred" data-p="obésité">obésité</button>
-          <button class="pred" data-p="obésité sévère">obésité sévère</button>
-        </div>
-      </div>
-
-      <div class="sect">
-        <div class="step">3. Et P002 (IMC 32), comment sera-t-il classé avec ce même ordre ?</div>
-        <div class="predrow pset" data-who="p2">
-          <button class="pred" data-p="poids normal">poids normal</button>
-          <button class="pred" data-p="obésité">obésité</button>
-          <button class="pred" data-p="obésité sévère">obésité sévère</button>
-        </div>
-        <div class="prederr" id="predErr" hidden>Répondez aux deux prédictions avant d'exécuter.</div>
-      </div>
-
-      <div class="sect">
-        <div class="step">4. Cliquez sur « exécuter » : le code s'applique et vous verrez si vos prédictions étaient justes.</div>
-        <div class="btns">
-          <button class="run" id="run">▶ exécuter</button>
-          <button class="reset" id="reset">réinitialiser</button>
-        </div>
-      </div>
+  <div class="exercise-popup">
+    <div class="step1 first">1. Cliquez sur les onglets script_v1.R / script_v2.R (panneau Source) pour lire les deux ordres, et comparez-les.</div>
+    <div class="step1">2. Version actuelle : <span class="mono ver-value" id="verLabel">script_v1.R (obésité avant obésité sévère)</span></div>
+    <div class="predlabel">Comment P003 (IMC 42) sera-t-il classé avec cet ordre ?</div>
+    <div class="predrow pset" data-who="p3">
+      <button class="pred" data-p="poids normal">poids normal</button>
+      <button class="pred" data-p="obésité">obésité</button>
+      <button class="pred" data-p="obésité sévère">obésité sévère</button>
     </div>
-
-    <div class="pane res">
-      <div class="pane-head">résultat : <span class="mono">data</span> (version <span id="vlabel">1</span>)</div>
-      <table>
-        <thead><tr><th>patient</th><th>imc</th><th>situation_imc</th></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div class="feedback" id="feedback"></div>
+    <div class="predlabel">Et P002 (IMC 32) ?</div>
+    <div class="predrow pset" data-who="p2">
+      <button class="pred" data-p="poids normal">poids normal</button>
+      <button class="pred" data-p="obésité">obésité</button>
+      <button class="pred" data-p="obésité sévère">obésité sévère</button>
+    </div>
+    <div class="prederr" id="predErr" hidden>Répondez aux deux prédictions avant d'exécuter.</div>
+    <div class="step1">3. Cliquez sur ▶ Run, puis observez Environment (ci-dessous).</div>
+    <div style="margin-top:8px;">
+      <button class="run" id="run">▶ Run</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="compare" id="compare">Comparaison : exécutez les deux versions pour voir lesquelles changent selon l'ordre.</div>
+    <div class="footer-row">
+      <button class="revealBtn" id="revealBtn">Voir l'explication</button>
+      <button class="reset" id="resetEx">réinitialiser l'exercice</button>
+    </div>
+    <div class="reveal" id="reveal" hidden>
+      <span class="mono">case_when()</span> évalue les conditions de haut en bas et s'arrête à la première vraie.<br>
+      Quand <span class="mono">imc &gt;= 30</span> est écrit avant <span class="mono">imc &gt;= 40</span>, un IMC de 42 déclenche d'abord « obésité » et n'atteint jamais « obésité sévère ». P002 (IMC 32), lui, est classé « obésité » dans les deux cas : l'ordre ne le concerne pas.<br>
+      La règle : placer les conditions du plus spécifique au plus général.
     </div>
   </div>
 
-  <div class="compare" id="compare">Comparaison : exécutez les deux versions pour voir lesquelles changent selon l'ordre.</div>
+  <div class="ide">
+    <div class="ide-titlebar">
+      <span class="r-logo">R</span>
+      <span class="ide-menu">File&nbsp;&nbsp;Edit&nbsp;&nbsp;Code&nbsp;&nbsp;View&nbsp;&nbsp;Plots&nbsp;&nbsp;Session&nbsp;&nbsp;Build&nbsp;&nbsp;Debug&nbsp;&nbsp;Profile&nbsp;&nbsp;Tools&nbsp;&nbsp;Help</span>
+    </div>
+    <div class="ide-grid">
 
-  <button class="revealBtn" id="revealBtn">Voir l'explication</button>
-  <div class="reveal" id="reveal" hidden>
-    <span class="mono">case_when()</span> évalue les conditions de haut en bas et s'arrête à la première vraie.<br>
-    Quand <span class="mono">imc &gt;= 30</span> est écrit avant <span class="mono">imc &gt;= 40</span>, un IMC de 42 déclenche d'abord « obésité » et n'atteint jamais « obésité sévère ». P002 (IMC 32), lui, est classé « obésité » dans les deux cas : l'ordre ne le concerne pas.<br>
-    La règle : placer les conditions du plus spécifique au plus général.
+      <div class="pane tl">
+        <div class="doc-tabs">
+          <div class="stabs">
+            <button class="stab on" data-v="1"><span class="file-ico"></span>script_v1.R</button>
+            <button class="stab" data-v="2"><span class="file-ico"></span>script_v2.R</button>
+          </div>
+        </div>
+        <div class="code-area">
+          <pre class="gutter">1
+2
+3
+4
+5
+6</pre>
+          <pre id="code" class="mono"></pre>
+        </div>
+      </div>
+
+      <div class="ide-div-v"></div>
+
+      <div class="pane tr">
+        <div class="tool-tabs">
+          <span class="ttab on">Environment</span>
+        </div>
+        <div class="env-toolbar">Global Environment</div>
+        <div class="env-body" id="envBody"></div>
+      </div>
+
+      <div class="ide-div-h"></div>
+
+      <div class="pane bottom bl">
+        <div class="tool-tabs">
+          <span class="ttab on">Console</span>
+          <span class="ttab">Terminal</span>
+          <span class="ttab">Background Jobs</span>
+        </div>
+        <div class="console-meta"><span class="r-badge">R 4.2.2</span>~/</div>
+        <div class="console-body mono" id="consoleBody"><div class="cline">&gt; </div></div>
+      </div>
+
+      <div class="pane bottom br">
+        <div class="tool-tabs">
+          <span class="ttab on">Files</span>
+          <span class="ttab">Plots</span>
+          <span class="ttab">Packages</span>
+          <span class="ttab">Help</span>
+          <span class="ttab">Viewer</span>
+        </div>
+        <div class="files-toolbar">Home</div>
+        <table class="files-table">
+          <thead><tr><th>Name</th><th>Size</th><th>Modified</th></tr></thead>
+          <tbody><tr><td><span class="folder-ico"></span>R</td><td></td><td></td></tr></tbody>
+        </table>
+      </div>
+
+    </div>
   </div>
 
 </div>
-
 <script>
 (function(){
   var patients=[{id:'P001',imc:24.5},{id:'P002',imc:32.1},{id:'P003',imc:42.0},{id:'P004',imc:27.8},{id:'P005',imc:45.3},{id:'P006',imc:30.5}];
   var focusIds=['P002','P003'];
+  var fileNames={1:'script_v1.R',2:'script_v2.R'};
+  var verDesc={1:'obésité avant obésité sévère',2:'obésité sévère avant obésité'};
   var kw='color:var(--text-accent);', str='color:var(--text-success);';
-  function ln(n,html){return '<span style="color:var(--text-muted);display:inline-block;width:1.4em;">'+n+'</span>'+html;}
+
   function codeFor(v){
     var a,b;
     if(v==1){a='imc &gt;= 30 ~ <span style="'+str+'">"obésité"</span>';b='imc &gt;= 40 ~ <span style="'+str+'">"obésité sévère"</span>';}
     else{a='imc &gt;= 40 ~ <span style="'+str+'">"obésité sévère"</span>';b='imc &gt;= 30 ~ <span style="'+str+'">"obésité"</span>';}
-    return [ln(1,'data <span style="'+kw+'">&lt;-</span> data <span style="'+kw+'">%&gt;%</span>'),
-      ln(2,'  <span style="'+kw+'">mutate</span>(situation_imc = <span style="'+kw+'">case_when</span>('),
-      ln(3,'    '+a+','),ln(4,'    '+b+','),
-      ln(5,'    <span style="'+kw+'">TRUE</span> ~ <span style="'+str+'">"poids normal"</span>'),
-      ln(6,'  ))')].join('\n');
+    return [
+      'data <span style="'+kw+'">&lt;-</span> data <span style="'+kw+'">%&gt;%</span>',
+      '  <span style="'+kw+'">mutate</span>(situation_imc = <span style="'+kw+'">case_when</span>(',
+      '    '+a+',',
+      '    '+b+',',
+      '    <span style="'+kw+'">TRUE</span> ~ <span style="'+str+'">"poids normal"</span>',
+      '  ))'
+    ].join('\n');
   }
-  function classify(imc,v){ if(v==1){if(imc>=30)return'obésité';if(imc>=40)return'obésité sévère';return'poids normal';} if(imc>=40)return'obésité sévère';if(imc>=30)return'obésité';return'poids normal'; }
+  function plainLines(v){
+    var a,b;
+    if(v==1){a='imc >= 30 ~ "obésité"';b='imc >= 40 ~ "obésité sévère"';}
+    else{a='imc >= 40 ~ "obésité sévère"';b='imc >= 30 ~ "obésité"';}
+    return [
+      'data <- data %>%',
+      '  mutate(situation_imc = case_when(',
+      '    '+a+',',
+      '    '+b+',',
+      '    TRUE ~ "poids normal"',
+      '  ))'
+    ];
+  }
+  function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function classify(imc,v){
+    if(v==1){ if(imc>=30) return 'obésité'; if(imc>=40) return 'obésité sévère'; return 'poids normal'; }
+    if(imc>=40) return 'obésité sévère'; if(imc>=30) return 'obésité'; return 'poids normal';
+  }
+  function tableHTML(showResult,v){
+    var h='<table class="dtable"><thead><tr><th>patient</th><th>imc</th><th>situation_imc</th></tr></thead><tbody>';
+    patients.forEach(function(p){
+      var sit = showResult?classify(p.imc,v):'-';
+      var hv=focusIds.indexOf(p.id)>=0;
+      h+='<tr'+(hv?' class="focus"':'')+'><td class="mono">'+p.id+'</td><td class="mono">'+p.imc.toFixed(1)+'</td><td'+(sit==='-'?' style="color:var(--text-muted);"':'')+'>'+sit+'</td></tr>';
+    });
+    return h+'</tbody></table>';
+  }
+
   var cur=1, p3={}, p2={}, ran={};
-  var codeEl=document.getElementById('code'),tbody=document.getElementById('tbody'),vlabel=document.getElementById('vlabel');
-  var feedback=document.getElementById('feedback'),predErr=document.getElementById('predErr'),compare=document.getElementById('compare');
-  var tabs=document.querySelectorAll('.vtab');
-  function setTabs(){tabs.forEach(function(t){t.classList.toggle('on', t.dataset.v==cur);});}
+  var codeEl=document.getElementById('code');
+  var envBody=document.getElementById('envBody');
+  var consoleBody=document.getElementById('consoleBody');
+  var verLabel=document.getElementById('verLabel');
+  var feedback=document.getElementById('feedback');
+  var predErr=document.getElementById('predErr');
+  var compare=document.getElementById('compare');
+  var stabs=document.querySelectorAll('.stab');
+
+  function setTabs(){
+    stabs.forEach(function(t){t.classList.toggle('on', t.dataset.v==cur);});
+    verLabel.textContent=fileNames[cur]+' ('+verDesc[cur]+')';
+  }
   function setPreds(){
     document.querySelectorAll('.pset').forEach(function(set){
       var who=set.dataset.who, val=(who==='p3'?p3[cur]:p2[cur]);
       set.querySelectorAll('.pred').forEach(function(b){b.classList.toggle('on', val===b.dataset.p);});
     });
   }
-  function rowHTML(p,sit){var hv=focusIds.indexOf(p.id)>=0;return '<tr'+(hv?' class="focus"':'')+'><td class="mono">'+p.id+'</td><td class="mono">'+p.imc.toFixed(1)+'</td><td'+(sit==='-'?' style="color:var(--text-muted);"':'')+'>'+sit+'</td></tr>';}
-  function renderTable(){vlabel.textContent=cur;tbody.innerHTML=patients.map(function(p){return rowHTML(p, ran[cur]?classify(p.imc,cur):'-');}).join('');}
-  function fbLine(label,guess,actual){var ok=(guess===actual);return '<div style="margin-bottom:3px;">'+label+' : '+(ok?'<span style="color:var(--text-success);">juste</span>':'<span style="color:var(--text-danger);">à revoir</span>')+' (prédit « '+guess+' », code « '+actual+' »)</div>';}
+  function renderEnv(){
+    var showResult=!!ran[cur];
+    var html='<div class="env-section-label">Data</div>';
+    html+='<div class="env-row"><div class="env-row-head"><span class="disclosure">▾</span><span class="obj-name mono">data</span><span class="obj-type">6 obs. of '+(showResult?3:2)+' variables</span></div><div class="env-preview">'+tableHTML(showResult,cur)+'</div></div>';
+    envBody.innerHTML=html;
+  }
+  function renderConsole(){
+    var html='';
+    if(ran[cur]){
+      plainLines(cur).forEach(function(l,i){html+='<div class="cline">'+(i===0?'&gt; ':'')+escapeHtml(l)+'</div>';});
+    }
+    html+='<div class="cline">&gt; </div>';
+    consoleBody.innerHTML=html;
+  }
+  function fbLine(label,guess,actual){
+    var ok=(guess===actual);
+    return '<div style="margin-bottom:3px;">'+label+' : '+(ok?'<span style="color:var(--text-success);">juste</span>':'<span style="color:var(--text-danger);">à revoir</span>')+' (prédit « '+guess+' », code « '+actual+' »)</div>';
+  }
   function renderFeedback(){
     if(!ran[cur]){feedback.innerHTML='';return;}
     feedback.innerHTML=fbLine('P003 (42)',p3[cur],classify(42,cur))+fbLine('P002 (32)',p2[cur],classify(32,cur));
@@ -179,12 +338,43 @@
     var both=ran[1]&&ran[2];
     compare.innerHTML='<div style="color:var(--text-primary);">P003 (IMC 42) &rarr; <span class="mono">'+c(42,1)+'</span> | <span class="mono">'+c(42,2)+'</span></div><div style="color:var(--text-primary);margin-top:3px;">P002 (IMC 32) &rarr; <span class="mono">'+c(32,1)+'</span> | <span class="mono">'+c(32,2)+'</span></div>'+(both?'<div style="margin-top:6px;">P003 change de classe selon l\'ordre, P002 non. Pourquoi cette différence ?</div>':'');
   }
-  tabs.forEach(function(t){t.addEventListener('click',function(){cur=parseInt(t.dataset.v);setTabs();codeEl.innerHTML=codeFor(cur);setPreds();predErr.hidden=true;renderTable();renderFeedback();});});
-  document.querySelectorAll('.pset').forEach(function(set){var who=set.dataset.who;set.querySelectorAll('.pred').forEach(function(b){b.addEventListener('click',function(){if(who==='p3')p3[cur]=b.dataset.p;else p2[cur]=b.dataset.p;predErr.hidden=true;setPreds();});});});
-  document.getElementById('run').addEventListener('click',function(){if(!p3[cur]||!p2[cur]){predErr.hidden=false;return;}ran[cur]=true;renderTable();renderFeedback();renderCompare();});
-  document.getElementById('reset').addEventListener('click',function(){p3={};p2={};ran={};predErr.hidden=true;setPreds();renderTable();feedback.innerHTML='';compare.innerHTML='Comparaison : exécutez les deux versions pour voir lesquelles changent selon l\'ordre.';});
-  var rb=document.getElementById('reveal');document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
-  setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderTable();
+
+  stabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      cur=parseInt(t.dataset.v);
+      setTabs();
+      codeEl.innerHTML=codeFor(cur);
+      setPreds();
+      predErr.hidden=true;
+      renderEnv();
+      renderConsole();
+      renderFeedback();
+    });
+  });
+  document.querySelectorAll('.pset').forEach(function(set){
+    var who=set.dataset.who;
+    set.querySelectorAll('.pred').forEach(function(b){
+      b.addEventListener('click',function(){
+        if(who==='p3') p3[cur]=b.dataset.p; else p2[cur]=b.dataset.p;
+        predErr.hidden=true;
+        setPreds();
+      });
+    });
+  });
+  document.getElementById('run').addEventListener('click',function(){
+    if(!p3[cur]||!p2[cur]){predErr.hidden=false;return;}
+    ran[cur]=true;
+    renderEnv();renderConsole();renderFeedback();renderCompare();
+  });
+  document.getElementById('resetEx').addEventListener('click',function(){
+    p3={};p2={};ran={};predErr.hidden=true;cur=1;
+    setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderEnv();renderConsole();feedback.innerHTML='';
+    compare.innerHTML='Comparaison : exécutez les deux versions pour voir lesquelles changent selon l\'ordre.';
+  });
+  var rb=document.getElementById('reveal');
+  document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
+
+  setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderEnv();renderConsole();
 })();
 </script>
 </body>
