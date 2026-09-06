@@ -11,7 +11,6 @@
   meme les panneaux vides, pour un rendu proche de l'IDE reel.
   Deploiement : GitHub Pages. Rise > Embed :
      <iframe src="VOTRE-URL" width="100%" height="900" frameborder="0"></iframe>
-  (hauteur augmentee par rapport a l'ancienne version, l'IDE prend plus de place)
   Mode sombre gere via prefers-color-scheme.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,7 +60,7 @@
   .exercise-popup .goal{font-weight:600;}
   .exercise-popup ul{margin:8px 0 0;padding-left:20px;}
   .exercise-popup li{margin-bottom:3px;}
-  .step1{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-weight:600;color:var(--step-blue);}
+  .step1{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-weight:600;color:var(--step-blue);}
   .step1.first{margin-top:0;padding-top:0;border-top:none;}
   .pred{border:none;background:var(--btn-bg);color:var(--btn-text);border-radius:5px;padding:6px 20px;font-size:13px;font-weight:600;font-family:var(--font-sans);cursor:pointer;opacity:.55;}
   .pred.on{opacity:1;box-shadow:0 0 0 2px var(--surface-2),0 0 0 4px var(--btn-bg);}
@@ -112,8 +111,8 @@
   .env-preview{padding-left:16px;}
 
   .dtable{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono);}
-  .dtable th{text-align:left;padding:4px 7px;font-weight:500;color:var(--text-muted);font-size:11px;border-bottom:0.5px solid var(--border);}
-  .dtable td{padding:4px 7px;border-bottom:0.5px solid var(--border);color:var(--text-primary);}
+  .dtable th{text-align:left;padding:4px 7px;font-weight:500;color:var(--text-muted);font-size:11px;border-bottom:1px solid var(--border);}
+  .dtable td{padding:4px 7px;border-bottom:1px solid var(--border);color:var(--text-primary);}
   .dtable .cimc{background:var(--bg-accent);color:var(--text-accent);}
   .dtable th.cimc{color:var(--text-accent);}
 
@@ -122,10 +121,10 @@
   .files-table td{padding:4px 12px;color:var(--text-primary);}
   .folder-ico{display:inline-block;width:11px;height:9px;background:#e8b339;border-radius:1px;margin-right:6px;vertical-align:middle;}
 
-  .feedback{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-size:13px;color:var(--text-secondary);min-height:20px;}
+  .feedback{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);min-height:20px;}
   .footer-row{display:flex;align-items:center;gap:14px;margin-top:10px;}
-  .revealBtn{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:7px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  .revealBtn{border:1px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reset{border:1px solid var(--border);background:transparent;border-radius:2px;padding:7px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
   .reveal{margin-top:10px;font-size:14px;line-height:1.7;color:var(--text-primary);}
 </style>
 </head>
