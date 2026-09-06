@@ -7,8 +7,11 @@
 <!--
   Exercice interactif - Chapitre 1 (M2) : mutate(), afficher vs enregistrer (Obj 3).
   Maquette HTML/CSS/JS (ce n'est pas webR). L'apprenant predit puis verifie.
+  L'interface du bas imite RStudio (Source / Console / Environment / Files),
+  meme les panneaux vides, pour un rendu proche de l'IDE reel.
   Deploiement : GitHub Pages. Rise > Embed :
-     <iframe src="VOTRE-URL" width="100%" height="720" frameborder="0"></iframe>
+     <iframe src="VOTRE-URL" width="100%" height="900" frameborder="0"></iframe>
+  (hauteur augmentee par rapport a l'ancienne version, l'IDE prend plus de place)
   Mode sombre gere via prefers-color-scheme.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +26,14 @@
     --text-primary:#1a1a1a;--text-secondary:#5f5e5a;--text-muted:#8a8f96;
     --text-accent:#185FA5;--text-success:#1a7f5a;--text-danger:#b23b2e;
     --bg-accent:#E6F1FB;--step-blue:#0C447C;
+    --ide-chrome-bg:#ECECEC;--ide-header-bg:#F3F3F3;--ide-tab-inactive:#E4E4E4;--ide-tab-active:#FFFFFF;
+    --ide-border:#C9C9C9;--ide-console-bg:#FFFFFF;--ide-console-text:#1a1a1a;--ide-logo-bg:#2A5DB0;
+    --ide-gutter-bg:#F5F5F5;--ide-gutter-text:#9AA0A6;
+    --btn-bg:#185FA5;--btn-text:#ffffff;
+    --popup-shadow:0 14px 30px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.10);
+    --file-ico:#7C93B3;--badge-bg:#DCE6F5;--badge-text:#2A4A73;
+    --click-tint:rgba(244,151,80,.16);--click-tint-hover:rgba(244,151,80,.28);
+    --accent-orange:#F49750;
   }
   @media (prefers-color-scheme: dark){
     :root{
@@ -31,109 +42,178 @@
       --text-primary:#e8e8e8;--text-secondary:#b4b2a9;--text-muted:#9aa0a6;
       --text-accent:#85B7EB;--text-success:#97C459;--text-danger:#f09595;
       --bg-accent:#16324a;--step-blue:#85B7EB;
+      --ide-chrome-bg:#2b2b2b;--ide-header-bg:#333333;--ide-tab-inactive:#3a3a3a;--ide-tab-active:#1e1e1e;
+      --ide-border:#484848;--ide-console-bg:#1e1e1e;--ide-console-text:#d4d4d4;--ide-logo-bg:#5b9bd5;
+      --ide-gutter-bg:#262626;--ide-gutter-text:#7a7f85;
+      --popup-shadow:0 14px 34px rgba(0,0,0,.6),0 2px 10px rgba(0,0,0,.35);
+      --file-ico:#9db3d1;--badge-bg:#33455c;--badge-text:#BFD3EE;
+      --click-tint:rgba(244,151,80,.20);--click-tint-hover:rgba(244,151,80,.32);
+      --accent-orange:#F49750;
     }
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:var(--font-sans);background:var(--page-bg);color:var(--text-primary);line-height:1.55;padding:16px;font-size:15px;}
-  .wrap{max-width:860px;margin:0 auto;}
+  .wrap{max-width:960px;margin:0 auto;}
   .mono{font-family:var(--font-mono);font-variant-ligatures:none;}
-  pre#code{font-variant-ligatures:none;}
-  .objectif{border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;background:var(--surface-1);margin-bottom:14px;}
-  .objectif .goal{font-weight:600;}
-  .objectif ul{margin:8px 0 0;padding-left:20px;}
-  .objectif li{margin-bottom:3px;}
+
+  /* popup consignes, flotte au dessus de l'IDE */
+  .exercise-popup{position:relative;z-index:2;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;box-shadow:var(--popup-shadow);padding:16px 18px;margin:0 0 -22px 0;font-size:14px;line-height:1.7;}
+  .exercise-popup .goal{font-weight:600;}
+  .exercise-popup ul{margin:8px 0 0;padding-left:20px;}
+  .exercise-popup li{margin-bottom:3px;}
   .step1{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-weight:600;color:var(--step-blue);}
-  .rowflex{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
-  .pane{flex:1 1 340px;min-width:300px;border:0.5px solid var(--border);border-radius:2px;overflow:hidden;}
-  .pane.res{flex:1 1 260px;min-width:240px;}
-  .pane-head{padding:7px 10px;background:var(--surface-1);border-bottom:0.5px solid var(--border);font-size:12px;color:var(--text-secondary);}
-  .tabs{display:flex;border-bottom:0.5px solid var(--border);}
-  .vtab{flex:1;border:none;background:transparent;padding:7px;font-size:12px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);font-variant-ligatures:none;}
-  .vtab .mono{font-family:var(--font-mono);font-variant-ligatures:none;}
-  .vtab.on{background:var(--surface-2);color:var(--text-primary);}
-  .vtab:not(:last-child){border-right:0.5px solid var(--border);}
-  pre#code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre-wrap;word-break:break-word;background:var(--surface-2);}
-  .sect{padding:10px 12px;border-top:0.5px solid var(--border);}
-  .step{font-size:12.5px;font-weight:600;color:var(--step-blue);margin-bottom:8px;}
-  .pred{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:5px 16px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .pred.on{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent);}
+  .step1.first{margin-top:0;padding-top:0;border-top:none;}
+  .pred{border:none;background:var(--btn-bg);color:var(--btn-text);border-radius:5px;padding:6px 20px;font-size:13px;font-weight:600;font-family:var(--font-sans);cursor:pointer;opacity:.55;}
+  .pred.on{opacity:1;box-shadow:0 0 0 2px var(--surface-2),0 0 0 4px var(--btn-bg);}
   .prederr{font-size:12px;color:var(--text-danger);margin-top:6px;}
-  .btns{display:flex;align-items:center;gap:10px;}
-  .run{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:6px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:6px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
-  .chip{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:3px 8px;border-radius:2px;margin:0 5px 5px 0;border:0.5px solid var(--border);color:var(--text-primary);background:var(--surface-2);}
-  .chip.imc{border-color:var(--border-accent);color:var(--text-accent);background:var(--bg-accent);}
-  .envlabel{font-size:11.5px;color:var(--text-secondary);margin:0 0 5px;}
+
+  /* fenetre RStudio, en arriere plan sous le popup, nette et plate comme le vrai IDE */
+  .ide{position:relative;z-index:1;border:1px solid var(--ide-border);border-radius:4px;overflow:hidden;margin:14px 0;box-shadow:none;}
+  .ide-titlebar{display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--ide-chrome-bg);border-bottom:1px solid var(--ide-border);}
+  .r-logo{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ide-logo-bg);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .ide-menu{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ide-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:1px;background:var(--ide-border);}
+  .pane{background:var(--surface-2);display:flex;flex-direction:column;min-height:230px;}
+  .pane.bottom{min-height:200px;}
+  @media (max-width:640px){.ide-grid{grid-template-columns:1fr;}}
+
+  .tool-tabs{display:flex;background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);overflow-x:auto;}
+  .doc-tabs{display:flex;align-items:center;justify-content:space-between;background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);padding-right:8px;}
+  .doc-tabs .stabs{display:flex;overflow-x:auto;}
+  .ttab{padding:6px 12px;font-size:12px;color:var(--text-muted);white-space:nowrap;}
+  .ttab.on{background:var(--ide-tab-active);color:var(--text-primary);font-weight:500;}
+  .stab{flex:none;display:flex;align-items:center;border:none;border-right:1px solid var(--ide-border);border-top:2px solid transparent;background:var(--click-tint);padding:6px 12px;font-size:12px;font-family:var(--font-mono);cursor:pointer;color:var(--text-secondary);}
+  .stab:hover{background:var(--click-tint-hover);}
+  .stab.on{background:var(--ide-tab-active);color:var(--text-primary);font-weight:600;border-top:2px solid var(--file-ico);}
+  .file-ico{display:inline-block;width:9px;height:11px;background:var(--file-ico);border-radius:1px;margin-right:6px;}
+  .ver-value{color:var(--accent-orange);font-weight:700;}
+
+  .run{flex:none;border:none;background:var(--btn-bg);color:var(--btn-text);border-radius:4px;padding:4px 14px;font-size:12px;font-weight:600;font-family:var(--font-sans);cursor:pointer;}
+  .run:hover{filter:brightness(1.1);}
+  .r-badge{display:inline-block;background:var(--badge-bg);color:var(--badge-text);border-radius:10px;padding:1px 8px;font-size:10.5px;font-weight:600;margin-right:6px;}
+
+  .code-area{display:flex;flex:1;overflow:auto;background:var(--surface-2);}
+  .gutter{background:var(--ide-gutter-bg);color:var(--ide-gutter-text);font-family:var(--font-mono);font-size:12.5px;padding:10px 8px;text-align:right;border-right:1px solid var(--ide-border);user-select:none;}
+  #code{margin:0;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--text-primary);white-space:pre-wrap;word-break:break-word;flex:1;}
+
+  .console-meta{padding:4px 12px;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--ide-border);background:var(--ide-header-bg);}
+  .console-body{flex:1;background:var(--ide-console-bg);color:var(--ide-console-text);font-family:var(--font-mono);font-size:12.5px;padding:8px 12px;overflow:auto;}
+  .cline{white-space:pre-wrap;word-break:break-word;margin-bottom:2px;}
+  .cline.out{color:var(--text-accent);}
+
+  .env-toolbar,.files-toolbar{padding:5px 12px;font-size:11.5px;color:var(--text-secondary);background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);}
+  .env-body{flex:1;padding:8px 12px;overflow:auto;}
+  .env-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted);margin-bottom:4px;}
+  .env-row{margin-bottom:10px;}
+  .env-row-head{display:flex;align-items:center;gap:6px;font-size:12.5px;margin-bottom:4px;}
+  .disclosure{font-size:10px;color:var(--text-muted);}
+  .obj-name{color:var(--text-accent);font-weight:600;}
+  .obj-type{color:var(--text-muted);font-size:11.5px;}
+  .env-preview{padding-left:16px;}
+
   .dtable{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--font-mono);}
   .dtable th{text-align:left;padding:4px 7px;font-weight:500;color:var(--text-muted);font-size:11px;border-bottom:0.5px solid var(--border);}
   .dtable td{padding:4px 7px;border-bottom:0.5px solid var(--border);color:var(--text-primary);}
   .dtable .cimc{background:var(--bg-accent);color:var(--text-accent);}
   .dtable th.cimc{color:var(--text-accent);}
-  .feedback{margin-top:12px;border:0.5px solid var(--border);border-radius:2px;padding:10px 12px;font-size:13px;color:var(--text-secondary);background:var(--surface-1);min-height:20px;}
-  .revealBtn{margin-top:12px;border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
-  .reveal{margin-top:10px;border:0.5px solid var(--border);border-radius:2px;padding:12px 14px;font-size:14px;line-height:1.7;color:var(--text-primary);background:var(--surface-1);}
-  .reveal .mono{font-family:var(--font-mono);}
-  @media (max-width:600px){.pane{flex:1 1 100%;}}
+
+  .files-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .files-table th{text-align:left;padding:4px 12px;color:var(--text-muted);font-weight:500;font-size:11px;border-bottom:1px solid var(--ide-border);}
+  .files-table td{padding:4px 12px;color:var(--text-primary);}
+  .folder-ico{display:inline-block;width:11px;height:9px;background:#e8b339;border-radius:1px;margin-right:6px;vertical-align:middle;}
+
+  .feedback{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border);font-size:13px;color:var(--text-secondary);min-height:20px;}
+  .footer-row{display:flex;align-items:center;gap:14px;margin-top:10px;}
+  .revealBtn{border:0.5px solid var(--border-strong);background:var(--surface-2);border-radius:2px;padding:7px 14px;font-size:13px;font-family:var(--font-sans);cursor:pointer;color:var(--text-primary);}
+  .reset{border:0.5px solid var(--border);background:transparent;border-radius:2px;padding:7px 12px;font-size:12.5px;font-family:var(--font-sans);cursor:pointer;color:var(--text-secondary);}
+  .reveal{margin-top:10px;font-size:14px;line-height:1.7;color:var(--text-primary);}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="objectif">
-    <span class="goal">Objectif : créer une colonne imc à partir de poids et taille, et distinguer ce qui s'affiche de ce qui s'enregistre dans data.</span>
-    <ul>
-      <li>À droite, l'environnement : le contenu réel de data (ses colonnes).</li>
-      <li>Trois versions du même calcul : seule l'assignation change.</li>
-      <li>Prédisez d'abord, puis exécutez.</li>
-    </ul>
-    <div class="step1">1. Cliquez sur les trois versions pour lire le code, et repérez la différence.</div>
-  </div>
-
-  <div class="rowflex">
-    <div class="pane">
-      <div class="pane-head">script.R</div>
-      <div class="tabs">
-        <button class="vtab on" data-v="1">sans assignation</button>
-        <button class="vtab" data-v="2">data <span class="mono">&lt;-</span></button>
-        <button class="vtab" data-v="3">data1 <span class="mono">&lt;-</span></button>
-      </div>
-      <pre id="code"></pre>
-
-      <div class="sect">
-        <div class="step">2. Votre prédiction : pour la version « <span id="qver">sans assignation</span> », la colonne imc sera-t-elle enregistrée dans data ?</div>
-        <div style="display:flex;gap:6px;">
-          <button class="pred" data-p="oui">oui</button>
-          <button class="pred" data-p="non">non</button>
-        </div>
-        <div class="prederr" id="predErr" hidden>Choisissez d'abord une prédiction.</div>
-      </div>
-
-      <div class="sect">
-        <div class="step">3. Cliquez sur « exécuter » : observez le contenu de data à droite.</div>
-        <div class="btns">
-          <button class="run" id="run">▶ exécuter</button>
-          <button class="reset" id="reset">réinitialiser</button>
-        </div>
-      </div>
+  <div class="exercise-popup">
+    <div class="step1 first">1. Cliquez sur les onglets script_v1.R / script_v2.R / script_v3.R (panneau Source) pour lire chaque version.</div>
+    <div class="step1">2. Version actuelle : <span class="mono ver-value" id="verLabel">script_v1.R (sans assignation)</span>. Cette colonne imc sera-t-elle enregistrée dans data ?</div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="pred" data-p="oui">oui</button>
+      <button class="pred" data-p="non">non</button>
     </div>
-
-    <div class="pane res">
-      <div class="pane-head">environnement</div>
-      <div id="env" style="padding:10px 12px;"></div>
+    <div class="prederr" id="predErr" hidden>Choisissez d'abord une prédiction.</div>
+    <div class="step1">3. Cliquez sur ▶ Run, puis observez Console et Environment (ci-dessous).</div>
+    <div style="margin-top:8px;">
+      <button class="run" id="run">▶ Run</button>
+    </div>
+    <div class="feedback" id="feedback">Faites une prédiction, puis cliquez sur ▶ Run.</div>
+    <div class="footer-row">
+      <button class="revealBtn" id="revealBtn">Voir l'explication</button>
+      <button class="reset" id="resetEx">réinitialiser l'exercice</button>
+    </div>
+    <div class="reveal" id="reveal" hidden>
+      Les fonctions de dplyr ne modifient jamais l'objet d'entrée.<br>
+      Une transformation s'affiche dans la Console, mais ne s'enregistre dans l'Environment que si on la réassigne avec <span class="mono">&lt;-</span>.<br>
+      <span class="mono">data &lt;- mutate(...)</span> met à jour data ; <span class="mono">data1 &lt;- mutate(...)</span> crée une nouvelle table sans toucher data.
     </div>
   </div>
 
-  <div class="feedback" id="feedback">Faites une prédiction, puis exécutez.</div>
+  <div class="ide">
+    <div class="ide-titlebar">
+      <span class="r-logo">R</span>
+      <span class="ide-menu">File&nbsp;&nbsp;Edit&nbsp;&nbsp;Code&nbsp;&nbsp;View&nbsp;&nbsp;Plots&nbsp;&nbsp;Session&nbsp;&nbsp;Build&nbsp;&nbsp;Debug&nbsp;&nbsp;Profile&nbsp;&nbsp;Tools&nbsp;&nbsp;Help</span>
+    </div>
+    <div class="ide-grid">
 
-  <button class="revealBtn" id="revealBtn">Voir l'explication</button>
-  <div class="reveal" id="reveal" hidden>
-    Les fonctions de dplyr ne modifient jamais l'objet d'entrée.<br>
-    Une transformation s'affiche à l'écran, mais ne s'enregistre que si on la réassigne avec <span class="mono">&lt;-</span>.<br>
-    <span class="mono">data &lt;- mutate(...)</span> met à jour data ; <span class="mono">data1 &lt;- mutate(...)</span> crée une nouvelle table sans toucher data.
+      <div class="pane">
+        <div class="doc-tabs">
+          <div class="stabs">
+            <button class="stab on" data-v="1"><span class="file-ico"></span>script_v1.R</button>
+            <button class="stab" data-v="2"><span class="file-ico"></span>script_v2.R</button>
+            <button class="stab" data-v="3"><span class="file-ico"></span>script_v3.R</button>
+          </div>
+        </div>
+        <div class="code-area">
+          <div class="gutter">1</div>
+          <pre id="code" class="mono"></pre>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="tool-tabs">
+          <span class="ttab on">Environment</span>
+        </div>
+        <div class="env-toolbar">Global Environment</div>
+        <div class="env-body" id="envBody"></div>
+      </div>
+
+      <div class="pane bottom">
+        <div class="tool-tabs">
+          <span class="ttab on">Console</span>
+          <span class="ttab">Terminal</span>
+          <span class="ttab">Background Jobs</span>
+        </div>
+        <div class="console-meta"><span class="r-badge">R 4.2.2</span>~/</div>
+        <div class="console-body mono" id="consoleBody"><div class="cline">&gt; </div></div>
+      </div>
+
+      <div class="pane bottom">
+        <div class="tool-tabs">
+          <span class="ttab on">Files</span>
+          <span class="ttab">Plots</span>
+          <span class="ttab">Packages</span>
+          <span class="ttab">Help</span>
+          <span class="ttab">Viewer</span>
+        </div>
+        <div class="files-toolbar">Home</div>
+        <table class="files-table">
+          <thead><tr><th>Name</th><th>Size</th><th>Modified</th></tr></thead>
+          <tbody><tr><td><span class="folder-ico"></span>R</td><td></td><td></td></tr></tbody>
+        </table>
+      </div>
+
+    </div>
   </div>
 
 </div>
-
 <script>
 (function(){
   var rows=[
@@ -142,15 +222,35 @@
     {id:'P003',poids:91,taille:1.80},
     {id:'P004',poids:55,taille:1.60}
   ];
-  var labels={1:'sans assignation',2:'data <span class="mono">&lt;-</span>',3:'data1 <span class="mono">&lt;-</span>'};
+  var fileNames={1:'script_v1.R',2:'script_v2.R',3:'script_v3.R'};
   var kw='color:var(--text-accent);';
+
   function codeFor(v){
     var calc='<span style="'+kw+'">mutate</span>(data, imc = poids / taille^2)';
     if(v==1) return calc;
     if(v==2) return 'data <span style="'+kw+'">&lt;-</span> '+calc;
     return 'data1 <span style="'+kw+'">&lt;-</span> '+calc;
   }
+  function plainCode(v){
+    if(v==1) return 'mutate(data, imc = poids / taille^2)';
+    if(v==2) return 'data <- mutate(data, imc = poids / taille^2)';
+    return 'data1 <- mutate(data, imc = poids / taille^2)';
+  }
+  function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function imc(r){return (r.poids/(r.taille*r.taille)).toFixed(1);}
+  function pad(v,len,left){v=String(v);while(v.length<len){v=left? v+' ' : ' '+v;}return v;}
+
+  function tibbleLines(withImc){
+    var idW=10, numW=7;
+    var lines=[];
+    lines.push('# A tibble: 4 × '+(withImc?4:3));
+    lines.push('  '+pad('patient_id',idW,true)+pad('poids',numW)+pad('taille',numW)+(withImc?pad('imc',numW):''));
+    lines.push('  '+pad('<chr>',idW,true)+pad('<dbl>',numW)+pad('<dbl>',numW)+(withImc?pad('<dbl>',numW):''));
+    rows.forEach(function(r,i){
+      lines.push((i+1)+' '+pad(r.id,idW,true)+pad(r.poids,numW)+pad(r.taille.toFixed(2),numW)+(withImc?pad(imc(r),numW):''));
+    });
+    return lines;
+  }
   function tableHTML(showImc){
     var h='<table class="dtable"><thead><tr><th>patient_id</th><th>poids</th><th>taille</th>'+(showImc?'<th class="cimc">imc</th>':'')+'</tr></thead><tbody>';
     rows.forEach(function(r){
@@ -158,35 +258,87 @@
     });
     return h+'</tbody></table>';
   }
+
   var cur=1, pred={}, ran={};
-  var codeEl=document.getElementById('code'),env=document.getElementById('env'),qver=document.getElementById('qver');
-  var feedback=document.getElementById('feedback'),predErr=document.getElementById('predErr');
-  var tabs=document.querySelectorAll('.vtab'),preds=document.querySelectorAll('.pred');
+  var codeEl=document.getElementById('code');
+  var envBody=document.getElementById('envBody');
+  var consoleBody=document.getElementById('consoleBody');
+  var verLabel=document.getElementById('verLabel');
+  var feedback=document.getElementById('feedback');
+  var predErr=document.getElementById('predErr');
+  var stabs=document.querySelectorAll('.stab');
+  var preds=document.querySelectorAll('.pred');
+
   function imcInData(v){return v==2;}
-  function setTabs(){tabs.forEach(function(t){t.classList.toggle('on', t.dataset.v==cur);});qver.innerHTML=labels[cur];}
-  function setPreds(){preds.forEach(function(b){b.classList.toggle('on', pred[cur]===b.dataset.p);});}
-  function renderEnv(){
-    var showImc=(ran[cur]&&imcInData(cur));
-    var html='<div class="envlabel">data</div>'+tableHTML(showImc);
-    if(ran[cur]&&cur==3){html+='<div class="envlabel" style="margin-top:12px;">data1 (nouvelle table)</div>'+tableHTML(true);}
-    env.innerHTML=html;
+
+  function setTabs(){
+    stabs.forEach(function(t){t.classList.toggle('on', t.dataset.v==cur);});
+    var desc = cur==1?'sans assignation':cur==2?'data <-':'data1 <-';
+    verLabel.textContent=fileNames[cur]+' ('+desc+')';
   }
+  function setPreds(){preds.forEach(function(b){b.classList.toggle('on', pred[cur]===b.dataset.p);});}
+
+  function renderEnv(){
+    var showImc = !!(ran[cur] && imcInData(cur));
+    var html='<div class="env-section-label">Data</div>';
+    html+='<div class="env-row"><div class="env-row-head"><span class="disclosure">▾</span><span class="obj-name mono">data</span><span class="obj-type">4 obs. of '+(showImc?4:3)+' variables</span></div><div class="env-preview">'+tableHTML(showImc)+'</div></div>';
+    if(cur==3 && ran[cur]){
+      html+='<div class="env-row"><div class="env-row-head"><span class="disclosure">▾</span><span class="obj-name mono">data1</span><span class="obj-type">4 obs. of 4 variables</span></div><div class="env-preview">'+tableHTML(true)+'</div></div>';
+    }
+    envBody.innerHTML=html;
+  }
+
+  function renderConsole(){
+    var html='';
+    if(ran[cur]){
+      html+='<div class="cline">&gt; '+escapeHtml(plainCode(cur))+'</div>';
+      if(cur==1){
+        tibbleLines(true).forEach(function(l){html+='<div class="cline out">'+escapeHtml(l)+'</div>';});
+      }
+    }
+    html+='<div class="cline">&gt; </div>';
+    consoleBody.innerHTML=html;
+  }
+
   function renderFeedback(){
-    if(!ran[cur])return;
+    if(!ran[cur]){feedback.style.color='var(--text-secondary)';feedback.textContent='Faites une prédiction, puis cliquez sur ▶ Run.';return;}
     var actual=imcInData(cur)?'oui':'non', guess=pred[cur];
     var lead=(guess===actual)?'<span style="color:var(--text-success);">Anticipation juste.</span> ':'<span style="color:var(--text-danger);">Pas tout à fait.</span> ';
     var msg;
-    if(cur==1) msg='La commande a bien affiché imc à l\'écran, mais data n\'a pas changé : sans assignation, rien n\'est enregistré.';
-    else if(cur==2) msg='data a été réassignée : imc fait maintenant partie de data.';
-    else msg='data est inchangée ; imc a été enregistrée dans une nouvelle table, data1.';
+    if(cur==1) msg="La commande s'est affichée dans la Console, avec le résultat. Mais l'Environment n'a pas changé : sans assignation, rien n'est enregistré.";
+    else if(cur==2) msg="data a été réassignée : l'Environment montre imc dans data. La Console n'affiche aucun résultat : une assignation est invisible.";
+    else msg="data reste inchangée dans l'Environment ; une nouvelle table data1 apparaît avec imc. Là aussi, la Console n'affiche rien.";
     feedback.innerHTML=lead+msg;feedback.style.color='var(--text-primary)';
   }
-  tabs.forEach(function(t){t.addEventListener('click',function(){cur=parseInt(t.dataset.v);setTabs();codeEl.innerHTML=codeFor(cur);setPreds();predErr.hidden=true;renderEnv();if(ran[cur])renderFeedback();else{feedback.style.color='var(--text-secondary)';feedback.textContent='Faites une prédiction, puis exécutez.';}});});
-  preds.forEach(function(b){b.addEventListener('click',function(){pred[cur]=b.dataset.p;predErr.hidden=true;setPreds();});});
-  document.getElementById('run').addEventListener('click',function(){if(!pred[cur]){predErr.hidden=false;return;}ran[cur]=true;renderEnv();renderFeedback();});
-  document.getElementById('reset').addEventListener('click',function(){pred={};ran={};predErr.hidden=true;setPreds();renderEnv();feedback.style.color='var(--text-secondary)';feedback.textContent='Faites une prédiction, puis exécutez.';});
-  var rb=document.getElementById('reveal');document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
-  setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderEnv();
+
+  stabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      cur=parseInt(t.dataset.v);
+      setTabs();
+      codeEl.innerHTML=codeFor(cur);
+      setPreds();
+      predErr.hidden=true;
+      renderEnv();
+      renderConsole();
+      renderFeedback();
+    });
+  });
+  preds.forEach(function(b){
+    b.addEventListener('click',function(){pred[cur]=b.dataset.p;predErr.hidden=true;setPreds();});
+  });
+  document.getElementById('run').addEventListener('click',function(){
+    if(!pred[cur]){predErr.hidden=false;return;}
+    ran[cur]=true;
+    renderEnv();renderConsole();renderFeedback();
+  });
+  document.getElementById('resetEx').addEventListener('click',function(){
+    pred={};ran={};predErr.hidden=true;cur=1;
+    setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderEnv();renderConsole();renderFeedback();
+  });
+  var rb=document.getElementById('reveal');
+  document.getElementById('revealBtn').addEventListener('click',function(){rb.hidden=!rb.hidden;});
+
+  setTabs();codeEl.innerHTML=codeFor(cur);setPreds();renderEnv();renderConsole();renderFeedback();
 })();
 </script>
 </body>
