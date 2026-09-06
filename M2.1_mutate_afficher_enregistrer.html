@@ -11,6 +11,7 @@
   meme les panneaux vides, pour un rendu proche de l'IDE reel.
   Deploiement : GitHub Pages. Rise > Embed :
      <iframe src="VOTRE-URL" width="100%" height="900" frameborder="0"></iframe>
+  (hauteur augmentee par rapport a l'ancienne version, l'IDE prend plus de place)
   Mode sombre gere via prefers-color-scheme.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,10 +72,24 @@
   .ide-titlebar{display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--ide-chrome-bg);border-bottom:1px solid var(--ide-border);}
   .r-logo{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ide-logo-bg);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
   .ide-menu{font-size:12px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .ide-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:1px;background:var(--ide-border);}
-  .pane{background:var(--surface-2);display:flex;flex-direction:column;min-height:230px;}
+  .ide-grid{display:grid;grid-template-columns:1fr 5px 1fr;grid-template-rows:auto 5px auto;background:var(--surface-2);}
+  .pane{background:var(--surface-2);display:flex;flex-direction:column;min-height:230px;min-width:0;}
   .pane.bottom{min-height:200px;}
-  @media (max-width:640px){.ide-grid{grid-template-columns:1fr;}}
+  .pane.tl{grid-column:1;grid-row:1;}
+  .pane.tr{grid-column:3;grid-row:1;}
+  .pane.bl{grid-column:1;grid-row:3;}
+  .pane.br{grid-column:3;grid-row:3;}
+  .ide-div-v{grid-column:2;grid-row:1 / span 3;background:var(--ide-border);}
+  .ide-div-h{grid-column:1 / span 3;grid-row:2;background:var(--ide-border);}
+  @media (max-width:640px){
+    .ide-grid{grid-template-columns:1fr;}
+    .pane.tl,.pane.tr,.pane.bl,.pane.br{grid-column:1;border-bottom:5px solid var(--ide-border);}
+    .pane.tl{grid-row:1;}
+    .pane.tr{grid-row:2;}
+    .pane.bl{grid-row:3;}
+    .pane.br{grid-row:4;border-bottom:none;}
+    .ide-div-v,.ide-div-h{display:none;}
+  }
 
   .tool-tabs{display:flex;background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);overflow-x:auto;}
   .doc-tabs{display:flex;align-items:center;justify-content:space-between;background:var(--ide-header-bg);border-bottom:1px solid var(--ide-border);padding-right:8px;}
@@ -162,7 +177,7 @@
     </div>
     <div class="ide-grid">
 
-      <div class="pane">
+      <div class="pane tl">
         <div class="doc-tabs">
           <div class="stabs">
             <button class="stab on" data-v="1"><span class="file-ico"></span>script_v1.R</button>
@@ -176,7 +191,9 @@
         </div>
       </div>
 
-      <div class="pane">
+      <div class="ide-div-v"></div>
+
+      <div class="pane tr">
         <div class="tool-tabs">
           <span class="ttab on">Environment</span>
         </div>
@@ -184,7 +201,9 @@
         <div class="env-body" id="envBody"></div>
       </div>
 
-      <div class="pane bottom">
+      <div class="ide-div-h"></div>
+
+      <div class="pane bottom bl">
         <div class="tool-tabs">
           <span class="ttab on">Console</span>
           <span class="ttab">Terminal</span>
@@ -194,7 +213,7 @@
         <div class="console-body mono" id="consoleBody"><div class="cline">&gt; </div></div>
       </div>
 
-      <div class="pane bottom">
+      <div class="pane bottom br">
         <div class="tool-tabs">
           <span class="ttab on">Files</span>
           <span class="ttab">Plots</span>
